@@ -1,4 +1,4 @@
-import type { UserType } from '@/app/(auth)/auth'
+import type { UserType } from '@/lib/supabase/types'
 
 interface Entitlements {
   maxMessagesPerDay: number

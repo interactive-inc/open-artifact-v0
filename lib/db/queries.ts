@@ -1,17 +1,6 @@
 import 'server-only'
 
-import {
-  and,
-  asc,
-  count,
-  desc,
-  eq,
-  gt,
-  gte,
-  inArray,
-  lt,
-  type SQL,
-} from 'drizzle-orm'
+import { and, count, desc, eq, gte } from 'drizzle-orm'
 
 import {
   users,
@@ -21,57 +10,27 @@ import {
   type ChatOwnership,
   type AnonymousChatLog,
 } from './schema'
-import { generateUUID } from '../utils'
-import { generateHashedPassword } from './utils'
 import db from './connection'
 
-export async function getUser(email: string): Promise<Array<User>> {
+// Sync Supabase user to local database
+export async function ensureUserExists({
+  id,
+  email,
+}: {
+  id: string
+  email: string
+}) {
   try {
-    return await db.select().from(users).where(eq(users.email, email))
-  } catch (error) {
-    console.error('Failed to get user from database')
-    throw error
-  }
-}
-
-export async function createUser(
-  email: string,
-  password: string,
-): Promise<User[]> {
-  try {
-    const hashedPassword = generateHashedPassword(password)
     return await db
       .insert(users)
-      .values({
-        email,
-        password: hashedPassword,
-      })
-      .returning()
+      .values({ id, email })
+      .onConflictDoNothing({ target: users.id })
   } catch (error) {
-    console.error('Failed to create user in database')
+    console.error('Failed to ensure user exists in database')
     throw error
   }
 }
 
-export async function createGuestUser(): Promise<User[]> {
-  try {
-    const guestId = generateUUID()
-    const guestEmail = `guest-${guestId}@example.com`
-
-    return await db
-      .insert(users)
-      .values({
-        email: guestEmail,
-        password: null,
-      })
-      .returning()
-  } catch (error) {
-    console.error('Failed to create guest user in database')
-    throw error
-  }
-}
-
-// Chat ownership functions
 export async function createChatOwnership({
   v0ChatId,
   userId,

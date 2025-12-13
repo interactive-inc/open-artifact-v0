@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/app/(auth)/auth'
+import { auth } from '@/lib/supabase/auth'
 import { createChatOwnership, createAnonymousChatLog } from '@/lib/db/queries'
 
 function getClientIP(request: NextRequest): string {

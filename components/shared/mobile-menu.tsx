@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useSession } from 'next-auth/react'
+import { useSession } from '@/components/providers/session-provider'
 import { Menu, X, Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { GitHubIcon, VercelIcon } from '@/components/ui/icons'

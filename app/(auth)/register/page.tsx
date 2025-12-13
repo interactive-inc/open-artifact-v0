@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { auth } from '../auth'
+import { auth } from '@/lib/supabase/auth'
 import { AuthForm } from '@/components/auth-form'
 
 export default async function RegisterPage() {

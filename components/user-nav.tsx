@@ -1,6 +1,5 @@
 'use client'
 
-import { signOut } from 'next-auth/react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -12,18 +11,24 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { LogOut, User } from 'lucide-react'
-import { Session } from 'next-auth'
+import { signOutAction } from '@/app/(auth)/actions'
+import type { User as SupabaseUser } from '@supabase/supabase-js'
+import type { UserType } from '@/lib/supabase/types'
 
-interface UserNavProps {
-  session: Session | null
+type Session = {
+  user: SupabaseUser & { type: UserType }
+} | null
+
+type Props = {
+  session: Session
 }
 
-export function UserNav({ session }: UserNavProps) {
+export function UserNav(props: Props) {
   const initials =
-    session?.user?.email?.split('@')[0]?.slice(0, 2)?.toUpperCase() || 'U'
+    props.session?.user?.email?.split('@')[0]?.slice(0, 2)?.toUpperCase() || 'U'
 
-  const isGuest = session?.user?.type === 'guest'
-  const isSignedOut = !session
+  const isGuest = props.session?.user?.type === 'guest'
+  const isSignedOut = !props.session
 
   return (
     <DropdownMenu>
@@ -42,9 +47,9 @@ export function UserNav({ session }: UserNavProps) {
             <p className="text-sm font-medium leading-none">
               {isSignedOut ? 'Not signed in' : isGuest ? 'Guest User' : 'User'}
             </p>
-            {session?.user?.email && (
+            {props.session?.user?.email && (
               <p className="text-xs leading-none text-muted-foreground">
-                {session.user.email}
+                {props.session.user.email}
               </p>
             )}
           </div>
@@ -68,8 +73,7 @@ export function UserNav({ session }: UserNavProps) {
         {!isSignedOut && (
           <DropdownMenuItem
             onClick={async () => {
-              // Clear any local session data first
-              await signOut({ callbackUrl: '/', redirect: true })
+              await signOutAction()
             }}
             className="cursor-pointer"
           >

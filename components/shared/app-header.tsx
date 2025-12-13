@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { ChatSelector } from './chat-selector'
 import { MobileMenu } from './mobile-menu'
-import { useSession } from 'next-auth/react'
+import { useSession } from '@/components/providers/session-provider'
 import { UserNav } from '@/components/user-nav'
 import { Button } from '@/components/ui/button'
 import { VercelIcon, GitHubIcon } from '@/components/ui/icons'
@@ -26,22 +26,16 @@ interface AppHeaderProps {
 // Component that uses useSearchParams - needs to be wrapped in Suspense
 function SearchParamsHandler() {
   const searchParams = useSearchParams()
-  const { update } = useSession()
 
-  // Force session refresh when redirected after auth
   useEffect(() => {
     const shouldRefresh = searchParams.get('refresh') === 'session'
 
     if (shouldRefresh) {
-      // Force session update
-      update()
-
-      // Clean up URL without causing navigation
       const url = new URL(window.location.href)
       url.searchParams.delete('refresh')
       window.history.replaceState({}, '', url.pathname)
     }
-  }, [searchParams, update])
+  }, [searchParams])
 
   return null
 }

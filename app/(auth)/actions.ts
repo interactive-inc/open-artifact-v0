@@ -1,11 +1,10 @@
 'use server'
 
 import { z } from 'zod'
-import { signIn, signOut } from './auth'
-import { createUser, getUser } from '@/lib/db/queries'
+import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
-import { AuthError } from 'next-auth'
+import { ensureUserExists } from '@/lib/db/queries'
 
 const signInSchema = z.object({
   email: z.string().email('Please enter a valid email.'),
@@ -17,110 +16,114 @@ const signUpSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters.'),
 })
 
-interface ActionResult {
+type ActionResult = {
   type: 'error' | 'success'
   message: string
 }
 
+/**
+ * Sign in with email and password
+ */
 export async function signInAction(
-  _prevState: ActionResult | undefined,
+  previousState: ActionResult | undefined,
   formData: FormData,
 ): Promise<ActionResult> {
-  try {
-    const validatedData = signInSchema.parse({
-      email: formData.get('email'),
-      password: formData.get('password'),
-    })
+  const validationResult = signInSchema.safeParse({
+    email: formData.get('email'),
+    password: formData.get('password'),
+  })
 
-    await signIn('credentials', {
-      email: validatedData.email,
-      password: validatedData.password,
-      redirect: false,
-    })
-
-    revalidatePath('/')
-    redirect('/?refresh=session')
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return {
-        type: 'error',
-        message: error.issues[0].message,
-      }
+  if (!validationResult.success) {
+    return {
+      type: 'error',
+      message: validationResult.error.issues[0].message,
     }
-
-    if (error instanceof AuthError) {
-      switch (error.type) {
-        case 'CredentialsSignin':
-          return {
-            type: 'error',
-            message: 'Invalid credentials. Please try again.',
-          }
-        default:
-          return {
-            type: 'error',
-            message: 'Something went wrong. Please try again.',
-          }
-      }
-    }
-
-    // If it's a redirect, re-throw it
-    throw error
   }
+
+  const supabase = await createClient()
+
+  const { error, data } = await supabase.auth.signInWithPassword({
+    email: validationResult.data.email,
+    password: validationResult.data.password,
+  })
+
+  if (error) {
+    console.error('Supabase signIn error:', error.message, error.code)
+    return {
+      type: 'error',
+      message: error.message,
+    }
+  }
+
+  if (!data.session) {
+    console.error('No session returned after signIn')
+    return {
+      type: 'error',
+      message: 'Failed to create session. Please try again.',
+    }
+  }
+
+  // Sync user to local database
+  await ensureUserExists({
+    id: data.user.id,
+    email: data.user.email ?? '',
+  })
+
+  revalidatePath('/')
+  redirect('/')
 }
 
+/**
+ * Sign up with email and password
+ */
 export async function signUpAction(
-  _prevState: ActionResult | undefined,
+  previousState: ActionResult | undefined,
   formData: FormData,
 ): Promise<ActionResult> {
-  try {
-    const validatedData = signUpSchema.parse({
-      email: formData.get('email'),
-      password: formData.get('password'),
-    })
+  const validationResult = signUpSchema.safeParse({
+    email: formData.get('email'),
+    password: formData.get('password'),
+  })
 
-    const existingUsers = await getUser(validatedData.email)
-
-    if (existingUsers.length > 0) {
-      return {
-        type: 'error',
-        message: 'User already exists. Please sign in instead.',
-      }
+  if (!validationResult.success) {
+    return {
+      type: 'error',
+      message: validationResult.error.issues[0].message,
     }
-
-    await createUser(validatedData.email, validatedData.password)
-
-    const result = await signIn('credentials', {
-      email: validatedData.email,
-      password: validatedData.password,
-      redirect: false,
-    })
-
-    if (result?.error) {
-      return {
-        type: 'error',
-        message:
-          'Failed to sign in after registration. Please try signing in manually.',
-      }
-    }
-
-    revalidatePath('/')
-    redirect('/?refresh=session')
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return {
-        type: 'error',
-        message: error.issues[0].message,
-      }
-    }
-
-    if (error instanceof AuthError) {
-      return {
-        type: 'error',
-        message: 'Something went wrong. Please try again.',
-      }
-    }
-
-    // If it's a redirect, re-throw it
-    throw error
   }
+
+  const supabase = await createClient()
+
+  const { error, data } = await supabase.auth.signUp({
+    email: validationResult.data.email,
+    password: validationResult.data.password,
+  })
+
+  if (error) {
+    return {
+      type: 'error',
+      message: error.message,
+    }
+  }
+
+  // Sync user to local database if user was created
+  if (data.user) {
+    await ensureUserExists({
+      id: data.user.id,
+      email: data.user.email ?? '',
+    })
+  }
+
+  revalidatePath('/')
+  redirect('/')
+}
+
+/**
+ * Sign out current user
+ */
+export async function signOutAction(): Promise<void> {
+  const supabase = await createClient()
+  await supabase.auth.signOut()
+  revalidatePath('/')
+  redirect('/login')
 }
