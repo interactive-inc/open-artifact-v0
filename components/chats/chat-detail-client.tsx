@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
-import { AppHeader } from '@/components/shared/app-header'
 import { ChatMessages } from '@/components/chat/chat-messages'
 import { ChatInput } from '@/components/chat/chat-input'
 import { PreviewPanel } from '@/components/chat/preview-panel'
@@ -74,13 +73,11 @@ export function ChatDetailClient() {
   return (
     <div
       className={cn(
-        'min-h-screen bg-gray-50 dark:bg-black',
+        'h-full bg-gray-50 dark:bg-black',
         isFullscreen && 'fixed inset-0 z-50',
       )}
     >
-      <AppHeader />
-
-      <div className="flex flex-col h-[calc(100vh-64px-1px)] md:h-[calc(100vh-64px-1px)]">
+      <div className="flex flex-col h-full">
         <ResizableLayout
           className="flex-1 min-h-0"
           singlePanelMode={false}

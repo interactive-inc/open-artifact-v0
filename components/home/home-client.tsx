@@ -20,7 +20,6 @@ import {
   type ImageAttachment,
 } from '@/components/ai-elements/prompt-input'
 import { Suggestions, Suggestion } from '@/components/ai-elements/suggestion'
-import { AppHeader } from '@/components/shared/app-header'
 import { ChatMessages } from '@/components/chat/chat-messages'
 import { ChatInput } from '@/components/chat/chat-input'
 import { PreviewPanel } from '@/components/chat/preview-panel'
@@ -377,14 +376,12 @@ export function HomeClient() {
 
   if (showChatInterface) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-black flex flex-col">
+      <div className="h-full bg-gray-50 dark:bg-black flex flex-col">
         <Suspense fallback={null}>
           <SearchParamsHandler onReset={handleReset} />
         </Suspense>
 
-        <AppHeader />
-
-        <div className="flex flex-col h-[calc(100vh-64px-40px)] md:h-[calc(100vh-64px)]">
+        <div className="flex flex-col h-[calc(100%-40px)] md:h-full">
           <ResizableLayout
             className="flex-1 min-h-0"
             singlePanelMode={false}
@@ -435,12 +432,10 @@ export function HomeClient() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black flex flex-col">
+    <div className="h-full bg-gray-50 dark:bg-black flex flex-col">
       <Suspense fallback={null}>
         <SearchParamsHandler onReset={handleReset} />
       </Suspense>
-
-      <AppHeader />
 
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl w-full">

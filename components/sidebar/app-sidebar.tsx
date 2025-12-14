@@ -2,8 +2,10 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { MessageSquare, Plus, Home } from 'lucide-react'
+import { MessageSquare, Plus, User, Github, LogOut } from 'lucide-react'
 import { useChats } from '@/hooks/api/use-chats'
+import { useSession } from '@/components/providers/session-provider'
+import { useSignOut } from '@/hooks/api/use-auth'
 import {
   Sidebar,
   SidebarContent,
@@ -15,27 +17,56 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { VercelIcon } from '@/components/ui/icons'
+import { DEPLOY_URL } from '@/lib/constants'
 
 export function AppSidebar() {
   const pathname = usePathname()
   const chatsQuery = useChats()
+  const sessionData = useSession()
+  const signOutMutation = useSignOut()
+
+  const userEmail = sessionData.data?.user?.email
+  const userInitials = userEmail?.split('@')[0]?.slice(0, 2)?.toUpperCase() || 'U'
 
   return (
     <Sidebar>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild size="lg">
-              <Link href="/">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                  <Home className="size-4" />
-                </div>
-                <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-semibold">v0 Clone</span>
-                  <span className="text-xs text-muted-foreground">AI UI Generator</span>
-                </div>
-              </Link>
-            </SidebarMenuButton>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton size="lg" className="cursor-pointer">
+                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                    <User className="size-4" />
+                  </div>
+                  <div className="flex flex-col gap-0.5 leading-none">
+                    <span className="font-semibold truncate">{userEmail}</span>
+                    <span className="text-xs text-muted-foreground">v0 Clone</span>
+                  </div>
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                <DropdownMenuItem disabled className="text-muted-foreground">
+                  {userEmail}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => signOutMutation.mutate()}
+                  disabled={signOutMutation.isPending}
+                >
+                  <LogOut className="mr-2 size-4" />
+                  {signOutMutation.isPending ? 'Signing out...' : 'Sign out'}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
@@ -74,6 +105,37 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Links</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link
+                    href="https://github.com/vercel/v0-sdk"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Github className="size-4" />
+                    <span>vercel/v0-sdk</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link
+                    href={DEPLOY_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <VercelIcon size={16} />
+                    <span>Deploy with Vercel</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
