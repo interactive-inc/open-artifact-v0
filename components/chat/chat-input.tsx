@@ -17,7 +17,7 @@ import {
 import { Suggestions, Suggestion } from '@/components/ai-elements/suggestion'
 import { useState, useCallback, useEffect } from 'react'
 
-type ChatInputProps = {
+type Props = {
   message: string
   setMessage: (message: string) => void
   onSubmit: (
@@ -31,7 +31,7 @@ type ChatInputProps = {
   textareaRef?: React.RefObject<HTMLTextAreaElement | null>
 }
 
-export function ChatInput(props: ChatInputProps) {
+export function ChatInput(props: Props) {
   const attachments = props.attachments || []
   const [isDragOver, setIsDragOver] = useState(false)
 

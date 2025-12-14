@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react'
 import type { MessageBinaryFormat } from '@v0-sdk/react'
-import { Message, MessageContent } from '@/components/ai-elements/message'
+import { Message } from '@/components/ai-elements/message'
 import {
   Conversation,
   ConversationContent,
@@ -9,6 +9,7 @@ import { Loader } from '@/components/ai-elements/loader'
 import { MessageRenderer } from '@/components/message-renderer'
 import { sharedComponents } from '@/components/shared-components'
 import { StreamingMessage } from '@v0-sdk/react'
+import { cn } from '@/lib/utils'
 
 type ChatMessage = {
   type: 'user' | 'assistant'
@@ -23,31 +24,39 @@ type Chat = {
   url?: string
 }
 
-type ChatMessagesProps = {
+type Props = {
   chatHistory: ChatMessage[]
   isLoading: boolean
+  isStreaming: boolean
   currentChat: Chat | null
   onStreamingComplete: (finalContent: MessageBinaryFormat) => void
   onChatData: (chatData: Record<string, unknown>) => void
   onStreamingStarted?: () => void
+  scrollContainerRef?: React.RefObject<HTMLDivElement | null>
 }
 
-export function ChatMessages(props: ChatMessagesProps) {
+export function ChatMessages(props: Props) {
   const streamingStartedRef = useRef(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const isLocked = props.isLoading || props.isStreaming
 
-  // Reset the streaming started flag when a new message starts loading
   useEffect(() => {
     if (props.isLoading) {
       streamingStartedRef.current = false
     }
   }, [props.isLoading])
 
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [props.chatHistory, props.isLoading])
+
   if (props.chatHistory.length === 0) {
     return (
       <Conversation>
         <ConversationContent>
           <div>
-            {/* Empty conversation - messages will appear here when they load */}
           </div>
         </ConversationContent>
       </Conversation>
@@ -55,7 +64,7 @@ export function ChatMessages(props: ChatMessagesProps) {
   }
 
   return (
-    <>
+    <div className={cn('relative', isLocked && 'pointer-events-none select-none')}>
       <Conversation>
         <ConversationContent>
           {props.chatHistory.map((msg, index) => (
@@ -67,11 +76,13 @@ export function ChatMessages(props: ChatMessagesProps) {
                   role={msg.type}
                   onComplete={props.onStreamingComplete}
                   onChatData={props.onChatData}
-                  onChunk={(chunk) => {
-                    // Hide external loader once we start receiving content (only once)
+                  onChunk={() => {
                     if (props.onStreamingStarted && !streamingStartedRef.current) {
                       streamingStartedRef.current = true
                       props.onStreamingStarted()
+                    }
+                    if (messagesEndRef.current) {
+                      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
                     }
                   }}
                   onError={(error) => console.error('Streaming error:', error)}
@@ -92,8 +103,9 @@ export function ChatMessages(props: ChatMessagesProps) {
               <Loader size={16} className="text-gray-500 dark:text-gray-400" />
             </div>
           )}
+          <div ref={messagesEndRef} />
         </ConversationContent>
       </Conversation>
-    </>
+    </div>
   )
 }

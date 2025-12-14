@@ -67,6 +67,7 @@ export function HomeClient() {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
   const [activePanel, setActivePanel] = useState<'chat' | 'preview'>('chat')
+  const [isStreaming, setIsStreaming] = useState(false)
   const router = useRouter()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -78,6 +79,7 @@ export function HomeClient() {
     setMessage('')
     setAttachments([])
     setIsLoading(false)
+    setIsStreaming(false)
     setIsFullscreen(false)
     setRefreshKey((prev) => prev + 1)
 
@@ -198,6 +200,7 @@ export function HomeClient() {
       }
 
       setIsLoading(false)
+      setIsStreaming(true)
 
       setChatHistory((prev) => [
         ...prev,
@@ -211,6 +214,7 @@ export function HomeClient() {
     } catch (error) {
       console.error('Error creating chat:', error)
       setIsLoading(false)
+      setIsStreaming(false)
 
       const errorMessage =
         error instanceof Error
@@ -251,6 +255,7 @@ export function HomeClient() {
 
   const handleStreamingComplete = async (finalContent: MessageBinaryFormat) => {
     setIsLoading(false)
+    setIsStreaming(false)
 
     setChatHistory((prev) => {
       const updated = [...prev]
@@ -347,6 +352,7 @@ export function HomeClient() {
       }
 
       setIsLoading(false)
+      setIsStreaming(true)
 
       setChatHistory((prev) => [
         ...prev,
@@ -373,6 +379,7 @@ export function HomeClient() {
         },
       ])
       setIsLoading(false)
+      setIsStreaming(false)
     }
   }
 
@@ -393,6 +400,7 @@ export function HomeClient() {
                 <ChatMessages
                   chatHistory={chatHistory}
                   isLoading={isLoading}
+                  isStreaming={isStreaming}
                   currentChat={currentChat}
                   onStreamingComplete={handleStreamingComplete}
                   onChatData={handleChatData}

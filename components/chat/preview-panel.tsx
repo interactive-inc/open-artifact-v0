@@ -14,7 +14,7 @@ type Chat = {
   url?: string
 }
 
-type PreviewPanelProps = {
+type Props = {
   currentChat: Chat | null
   isFullscreen: boolean
   setIsFullscreen: (fullscreen: boolean) => void
@@ -22,7 +22,7 @@ type PreviewPanelProps = {
   setRefreshKey: (key: number | ((prev: number) => number)) => void
 }
 
-export function PreviewPanel(props: PreviewPanelProps) {
+export function PreviewPanel(props: Props) {
   return (
     <div
       className={cn(

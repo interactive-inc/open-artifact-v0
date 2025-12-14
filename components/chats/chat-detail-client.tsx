@@ -71,6 +71,7 @@ export function ChatDetailClient() {
               <ChatMessages
                 chatHistory={chatState.chatHistory}
                 isLoading={chatState.isLoading}
+                isStreaming={chatState.isStreaming}
                 currentChat={chatState.currentChat || null}
                 onStreamingComplete={chatState.handleStreamingComplete}
                 onChatData={chatState.handleChatData}
