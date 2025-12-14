@@ -376,56 +376,54 @@ export function HomeClient() {
 
   if (showChatInterface) {
     return (
-      <div className="h-full bg-gray-50 dark:bg-black flex flex-col">
+      <div className="h-full bg-gray-50 dark:bg-black flex flex-col overflow-hidden">
         <Suspense fallback={null}>
           <SearchParamsHandler onReset={handleReset} />
         </Suspense>
 
-        <div className="flex flex-col h-[calc(100%-40px)] md:h-full">
-          <ResizableLayout
-            className="flex-1 min-h-0"
-            singlePanelMode={false}
-            activePanel={activePanel === 'chat' ? 'left' : 'right'}
-            leftPanel={
-              <div className="flex flex-col h-full">
-                <div className="flex-1 overflow-y-auto">
-                  <ChatMessages
-                    chatHistory={chatHistory}
-                    isLoading={isLoading}
-                    currentChat={currentChat}
-                    onStreamingComplete={handleStreamingComplete}
-                    onChatData={handleChatData}
-                    onStreamingStarted={() => setIsLoading(false)}
-                  />
-                </div>
-
-                <ChatInput
-                  message={message}
-                  setMessage={setMessage}
-                  onSubmit={handleChatSendMessage}
+        <ResizableLayout
+          className="flex-1 min-h-0"
+          singlePanelMode={false}
+          activePanel={activePanel === 'chat' ? 'left' : 'right'}
+          leftPanel={
+            <div className="flex flex-col h-full">
+              <div className="flex-1 min-h-0 overflow-y-auto">
+                <ChatMessages
+                  chatHistory={chatHistory}
                   isLoading={isLoading}
-                  showSuggestions={false}
+                  currentChat={currentChat}
+                  onStreamingComplete={handleStreamingComplete}
+                  onChatData={handleChatData}
+                  onStreamingStarted={() => setIsLoading(false)}
                 />
               </div>
-            }
-            rightPanel={
-              <PreviewPanel
-                currentChat={currentChat}
-                isFullscreen={isFullscreen}
-                setIsFullscreen={setIsFullscreen}
-                refreshKey={refreshKey}
-                setRefreshKey={setRefreshKey}
-              />
-            }
-          />
 
-          <div className="md:hidden">
-            <BottomToolbar
-              activePanel={activePanel}
-              onPanelChange={setActivePanel}
-              hasPreview={!!currentChat}
+              <ChatInput
+                message={message}
+                setMessage={setMessage}
+                onSubmit={handleChatSendMessage}
+                isLoading={isLoading}
+                showSuggestions={false}
+              />
+            </div>
+          }
+          rightPanel={
+            <PreviewPanel
+              currentChat={currentChat}
+              isFullscreen={isFullscreen}
+              setIsFullscreen={setIsFullscreen}
+              refreshKey={refreshKey}
+              setRefreshKey={setRefreshKey}
             />
-          </div>
+          }
+        />
+
+        <div className="md:hidden flex-shrink-0">
+          <BottomToolbar
+            activePanel={activePanel}
+            onPanelChange={setActivePanel}
+            hasPreview={!!currentChat}
+          />
         </div>
       </div>
     )

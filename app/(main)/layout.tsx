@@ -15,9 +15,9 @@ export default async function MainLayout({
   }
 
   return (
-    <SidebarProvider>
+    <SidebarProvider className="h-full min-h-0">
       <AppSidebar />
-      <SidebarInset>{children}</SidebarInset>
+      <SidebarInset className="h-full overflow-hidden">{children}</SidebarInset>
     </SidebarProvider>
   )
 }
