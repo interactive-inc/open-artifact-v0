@@ -5,20 +5,19 @@ import { Copy, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { MissingEnvVar } from '@/lib/env-check'
 
-interface EnvSetupProps {
+type EnvSetupProps = {
   missingVars: MissingEnvVar[]
 }
 
-export function EnvSetup({ missingVars }: EnvSetupProps) {
+export function EnvSetup(props: EnvSetupProps) {
   const [copied, setCopied] = useState(false)
 
-  const envFileContent = missingVars
+  const envFileContent = props.missingVars
     .map((envVar) => {
       if (envVar.example) {
         return `${envVar.name}=${envVar.example}`
-      } else {
-        return `${envVar.name}=`
       }
+      return `${envVar.name}=`
     })
     .join('\n')
 

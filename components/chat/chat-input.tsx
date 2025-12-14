@@ -17,7 +17,7 @@ import {
 import { Suggestions, Suggestion } from '@/components/ai-elements/suggestion'
 import { useState, useCallback, useEffect } from 'react'
 
-interface ChatInputProps {
+type ChatInputProps = {
   message: string
   setMessage: (message: string) => void
   onSubmit: (
@@ -31,40 +31,32 @@ interface ChatInputProps {
   textareaRef?: React.RefObject<HTMLTextAreaElement | null>
 }
 
-export function ChatInput({
-  message,
-  setMessage,
-  onSubmit,
-  isLoading,
-  showSuggestions,
-  attachments = [],
-  onAttachmentsChange,
-  textareaRef,
-}: ChatInputProps) {
+export function ChatInput(props: ChatInputProps) {
+  const attachments = props.attachments || []
   const [isDragOver, setIsDragOver] = useState(false)
 
   const handleImageFiles = useCallback(
     async (files: File[]) => {
-      if (!onAttachmentsChange) return
+      if (!props.onAttachmentsChange) return
 
       try {
         const newAttachments = await Promise.all(
           files.map((file) => createImageAttachment(file)),
         )
-        onAttachmentsChange([...attachments, ...newAttachments])
+        props.onAttachmentsChange([...attachments, ...newAttachments])
       } catch (error) {
         console.error('Error processing image files:', error)
       }
     },
-    [attachments, onAttachmentsChange],
+    [attachments, props.onAttachmentsChange],
   )
 
   const handleRemoveAttachment = useCallback(
     (id: string) => {
-      if (!onAttachmentsChange) return
-      onAttachmentsChange(attachments.filter((att) => att.id !== id))
+      if (!props.onAttachmentsChange) return
+      props.onAttachmentsChange(attachments.filter((att) => att.id !== id))
     },
-    [attachments, onAttachmentsChange],
+    [attachments, props.onAttachmentsChange],
   )
 
   const handleDragOver = useCallback(() => {
@@ -81,29 +73,29 @@ export function ChatInput({
 
   // Save to sessionStorage when message or attachments change
   useEffect(() => {
-    if (message.trim() || attachments.length > 0) {
-      savePromptToStorage(message, attachments)
+    if (props.message.trim() || attachments.length > 0) {
+      savePromptToStorage(props.message, attachments)
     } else {
       // Clear sessionStorage if both message and attachments are empty
       clearPromptFromStorage()
     }
-  }, [message, attachments])
+  }, [props.message, attachments])
 
   // Restore from sessionStorage on mount (only if no existing data)
   useEffect(() => {
-    if (!message && attachments.length === 0) {
+    if (!props.message && attachments.length === 0) {
       const storedData = loadPromptFromStorage()
       if (storedData) {
-        setMessage(storedData.message)
-        if (storedData.attachments.length > 0 && onAttachmentsChange) {
+        props.setMessage(storedData.message)
+        if (storedData.attachments.length > 0 && props.onAttachmentsChange) {
           const restoredAttachments = storedData.attachments.map(
             createImageAttachmentFromStored,
           )
-          onAttachmentsChange(restoredAttachments)
+          props.onAttachmentsChange(restoredAttachments)
         }
       }
     }
-  }, [message, attachments, setMessage, onAttachmentsChange])
+  }, [props.message, attachments, props.setMessage, props.onAttachmentsChange])
 
   const handleSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
@@ -111,9 +103,9 @@ export function ChatInput({
       clearPromptFromStorage()
 
       const attachmentUrls = attachments.map((att) => ({ url: att.dataUrl }))
-      onSubmit(e, attachmentUrls.length > 0 ? attachmentUrls : undefined)
+      props.onSubmit(e, attachmentUrls.length > 0 ? attachmentUrls : undefined)
     },
-    [onSubmit, attachments],
+    [props.onSubmit, attachments],
   )
 
   return (
@@ -133,9 +125,9 @@ export function ChatInput({
             onRemove={handleRemoveAttachment}
           />
           <PromptInputTextarea
-            ref={textareaRef}
-            onChange={(e) => setMessage(e.target.value)}
-            value={message}
+            ref={props.textareaRef}
+            onChange={(e) => props.setMessage(e.target.value)}
+            value={props.message}
             className="min-h-[60px]"
             placeholder="Continue the conversation..."
           />
@@ -146,29 +138,29 @@ export function ChatInput({
             <PromptInputTools>
               <PromptInputMicButton
                 onTranscript={(transcript) => {
-                  setMessage(message + (message ? ' ' : '') + transcript)
+                  props.setMessage(props.message + (props.message ? ' ' : '') + transcript)
                 }}
                 onError={(error) => {
                   console.error('Speech recognition error:', error)
                 }}
               />
               <PromptInputSubmit
-                disabled={!message}
-                status={isLoading ? 'streaming' : 'ready'}
+                disabled={!props.message}
+                status={props.isLoading ? 'streaming' : 'ready'}
               />
             </PromptInputTools>
           </PromptInputToolbar>
         </PromptInput>
       </div>
-      {showSuggestions && (
+      {props.showSuggestions && (
         <div className="max-w-2xl mx-auto mt-2">
           <Suggestions>
             <Suggestion
               onClick={() => {
-                setMessage('Landing page')
+                props.setMessage('Landing page')
                 // Submit after setting message
                 setTimeout(() => {
-                  const form = textareaRef?.current?.form
+                  const form = props.textareaRef?.current?.form
                   if (form) {
                     form.requestSubmit()
                   }
@@ -178,10 +170,10 @@ export function ChatInput({
             />
             <Suggestion
               onClick={() => {
-                setMessage('Todo app')
+                props.setMessage('Todo app')
                 // Submit after setting message
                 setTimeout(() => {
-                  const form = textareaRef?.current?.form
+                  const form = props.textareaRef?.current?.form
                   if (form) {
                     form.requestSubmit()
                   }
@@ -191,10 +183,10 @@ export function ChatInput({
             />
             <Suggestion
               onClick={() => {
-                setMessage('Dashboard')
+                props.setMessage('Dashboard')
                 // Submit after setting message
                 setTimeout(() => {
-                  const form = textareaRef?.current?.form
+                  const form = props.textareaRef?.current?.form
                   if (form) {
                     form.requestSubmit()
                   }
@@ -204,10 +196,10 @@ export function ChatInput({
             />
             <Suggestion
               onClick={() => {
-                setMessage('Blog')
+                props.setMessage('Blog')
                 // Submit after setting message
                 setTimeout(() => {
-                  const form = textareaRef?.current?.form
+                  const form = props.textareaRef?.current?.form
                   if (form) {
                     form.requestSubmit()
                   }
@@ -217,10 +209,10 @@ export function ChatInput({
             />
             <Suggestion
               onClick={() => {
-                setMessage('E-commerce')
+                props.setMessage('E-commerce')
                 // Submit after setting message
                 setTimeout(() => {
-                  const form = textareaRef?.current?.form
+                  const form = props.textareaRef?.current?.form
                   if (form) {
                     form.requestSubmit()
                   }
@@ -230,10 +222,10 @@ export function ChatInput({
             />
             <Suggestion
               onClick={() => {
-                setMessage('Portfolio')
+                props.setMessage('Portfolio')
                 // Submit after setting message
                 setTimeout(() => {
-                  const form = textareaRef?.current?.form
+                  const form = props.textareaRef?.current?.form
                   if (form) {
                     form.requestSubmit()
                   }
@@ -243,10 +235,10 @@ export function ChatInput({
             />
             <Suggestion
               onClick={() => {
-                setMessage('Chat app')
+                props.setMessage('Chat app')
                 // Submit after setting message
                 setTimeout(() => {
-                  const form = textareaRef?.current?.form
+                  const form = props.textareaRef?.current?.form
                   if (form) {
                     form.requestSubmit()
                   }
@@ -256,10 +248,10 @@ export function ChatInput({
             />
             <Suggestion
               onClick={() => {
-                setMessage('Calculator')
+                props.setMessage('Calculator')
                 // Submit after setting message
                 setTimeout(() => {
-                  const form = textareaRef?.current?.form
+                  const form = props.textareaRef?.current?.form
                   if (form) {
                     form.requestSubmit()
                   }

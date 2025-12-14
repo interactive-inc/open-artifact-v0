@@ -1,18 +1,22 @@
-import { drizzle } from 'drizzle-orm/postgres-js'
+import { drizzle, type PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import * as schema from './schema'
 
-// Load environment variables
 import { config } from 'dotenv'
 config()
 
-let db: any = null
+type DatabaseSchema = typeof schema
 
-// Only initialize database if POSTGRES_URL is available
-if (process.env.POSTGRES_URL) {
+function createDatabase(): PostgresJsDatabase<DatabaseSchema> | null {
+  if (!process.env.POSTGRES_URL) {
+    return null
+  }
+
   console.log('🗄️  Using PostgreSQL database')
   const client = postgres(process.env.POSTGRES_URL)
-  db = drizzle(client, { schema })
+  return drizzle(client, { schema })
 }
+
+const db = createDatabase()
 
 export default db

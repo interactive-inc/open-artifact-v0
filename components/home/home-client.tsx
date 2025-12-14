@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import type { MessageBinaryFormat } from '@v0-sdk/react'
 import {
   PromptInput,
   PromptInputImageButton,
@@ -53,7 +54,7 @@ export function HomeClient() {
   const [chatHistory, setChatHistory] = useState<
     Array<{
       type: 'user' | 'assistant'
-      content: string | any
+      content: string | MessageBinaryFormat
       isStreaming?: boolean
       stream?: ReadableStream<Uint8Array> | null
     }>
@@ -226,19 +227,20 @@ export function HomeClient() {
     }
   }
 
-  const handleChatData = async (chatData: any) => {
-    if (chatData.id) {
-      if (!currentChatId || chatData.object === 'chat') {
-        setCurrentChatId(chatData.id)
-        setCurrentChat({ id: chatData.id })
+  const handleChatData = async (chatData: unknown) => {
+    const data = chatData as { id?: string; object?: string }
+    if (data.id) {
+      if (!currentChatId || data.object === 'chat') {
+        setCurrentChatId(data.id)
+        setCurrentChat({ id: data.id })
 
-        window.history.pushState(null, '', `/chats/${chatData.id}`)
+        window.history.pushState(null, '', `/chats/${data.id}`)
       }
 
       if (!currentChatId) {
         try {
           await client.api.chats.ownership.$post({
-            json: { chatId: chatData.id },
+            json: { chatId: data.id },
           })
         } catch (error) {
           console.error('Failed to create chat ownership:', error)
@@ -247,7 +249,7 @@ export function HomeClient() {
     }
   }
 
-  const handleStreamingComplete = async (finalContent: any) => {
+  const handleStreamingComplete = async (finalContent: MessageBinaryFormat) => {
     setIsLoading(false)
 
     setChatHistory((prev) => {
@@ -278,8 +280,8 @@ export function HomeClient() {
           })
           .then((chatDetails) => {
             if (chatDetails && !('error' in chatDetails)) {
-              const demoUrl =
-                (chatDetails as any)?.latestVersion?.demoUrl || (chatDetails as any)?.demo
+              const details = chatDetails as { latestVersion?: { demoUrl?: string }; demo?: string }
+              const demoUrl = details.latestVersion?.demoUrl || details.demo
 
               if (demoUrl) {
                 setCurrentChat((prev) =>

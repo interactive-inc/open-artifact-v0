@@ -40,25 +40,20 @@ function preprocessMessageContent(
   })
 }
 
-interface MessageRendererProps {
+type MessageRendererProps = {
   content: MessageBinaryFormat | string
   messageId?: string
   role: 'user' | 'assistant'
   className?: string
 }
 
-export function MessageRenderer({
-  content,
-  messageId,
-  role,
-  className,
-}: MessageRendererProps) {
+export function MessageRenderer(props: MessageRendererProps) {
   // If content is a string (user message or fallback), render it as plain text
-  if (typeof content === 'string') {
+  if (typeof props.content === 'string') {
     return (
-      <div className={className}>
+      <div className={props.className}>
         <p className="mb-4 text-gray-700 dark:text-gray-200 leading-relaxed">
-          {content}
+          {props.content}
         </p>
       </div>
     )
@@ -66,14 +61,14 @@ export function MessageRenderer({
 
   // If content is MessageBinaryFormat (from v0 API), use the Message component
   // Preprocess content to remove V0_FILE markers and shell placeholders
-  const processedContent = preprocessMessageContent(content)
+  const processedContent = preprocessMessageContent(props.content)
 
   return (
     <Message
       content={processedContent}
-      messageId={messageId}
-      role={role}
-      className={className}
+      messageId={props.messageId}
+      role={props.role}
+      className={props.className}
       components={sharedComponents}
     />
   )

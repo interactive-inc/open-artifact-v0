@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from 'react'
+import type { MessageBinaryFormat } from '@v0-sdk/react'
 import { Message, MessageContent } from '@/components/ai-elements/message'
 import {
   Conversation,
@@ -9,46 +10,39 @@ import { MessageRenderer } from '@/components/message-renderer'
 import { sharedComponents } from '@/components/shared-components'
 import { StreamingMessage } from '@v0-sdk/react'
 
-interface ChatMessage {
+type ChatMessage = {
   type: 'user' | 'assistant'
-  content: string | any
+  content: string | MessageBinaryFormat
   isStreaming?: boolean
   stream?: ReadableStream<Uint8Array> | null
 }
 
-interface Chat {
+type Chat = {
   id: string
   demo?: string
   url?: string
 }
 
-interface ChatMessagesProps {
+type ChatMessagesProps = {
   chatHistory: ChatMessage[]
   isLoading: boolean
   currentChat: Chat | null
-  onStreamingComplete: (finalContent: any) => void
-  onChatData: (chatData: any) => void
+  onStreamingComplete: (finalContent: MessageBinaryFormat) => void
+  onChatData: (chatData: Record<string, unknown>) => void
   onStreamingStarted?: () => void
 }
 
-export function ChatMessages({
-  chatHistory,
-  isLoading,
-  currentChat,
-  onStreamingComplete,
-  onChatData,
-  onStreamingStarted,
-}: ChatMessagesProps) {
+export function ChatMessages(props: ChatMessagesProps) {
   const streamingStartedRef = useRef(false)
 
   // Reset the streaming started flag when a new message starts loading
   useEffect(() => {
-    if (isLoading) {
+    if (props.isLoading) {
       streamingStartedRef.current = false
     }
-  }, [isLoading])
+  }, [props.isLoading])
 
-  if (chatHistory.length === 0) {
+  if (props.chatHistory.length === 0) {
     return (
       <Conversation>
         <ConversationContent>
@@ -64,20 +58,20 @@ export function ChatMessages({
     <>
       <Conversation>
         <ConversationContent>
-          {chatHistory.map((msg, index) => (
+          {props.chatHistory.map((msg, index) => (
             <Message from={msg.type} key={index}>
               {msg.isStreaming && msg.stream ? (
                 <StreamingMessage
                   stream={msg.stream}
                   messageId={`msg-${index}`}
                   role={msg.type}
-                  onComplete={onStreamingComplete}
-                  onChatData={onChatData}
+                  onComplete={props.onStreamingComplete}
+                  onChatData={props.onChatData}
                   onChunk={(chunk) => {
                     // Hide external loader once we start receiving content (only once)
-                    if (onStreamingStarted && !streamingStartedRef.current) {
+                    if (props.onStreamingStarted && !streamingStartedRef.current) {
                       streamingStartedRef.current = true
-                      onStreamingStarted()
+                      props.onStreamingStarted()
                     }
                   }}
                   onError={(error) => console.error('Streaming error:', error)}
@@ -93,7 +87,7 @@ export function ChatMessages({
               )}
             </Message>
           ))}
-          {isLoading && (
+          {props.isLoading && (
             <div className="flex justify-center py-4">
               <Loader size={16} className="text-gray-500 dark:text-gray-400" />
             </div>

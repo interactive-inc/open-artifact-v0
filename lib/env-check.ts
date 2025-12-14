@@ -1,4 +1,4 @@
-export interface MissingEnvVar {
+export type MissingEnvVar = {
   name: string
   description: string
   example: string

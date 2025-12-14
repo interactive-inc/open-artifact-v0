@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import useSWR from 'swr'
 
-interface V0Chat {
+type V0Chat = {
   id: string
   object: 'chat'
   name?: string
@@ -16,7 +16,7 @@ interface V0Chat {
   updatedAt: string
 }
 
-interface ChatsResponse {
+type ChatsResponse = {
   object: 'list'
   data: V0Chat[]
 }

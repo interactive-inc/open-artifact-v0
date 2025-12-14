@@ -3,7 +3,7 @@ import { updateSession } from '@/lib/supabase/middleware'
 import { guestRegex } from './lib/constants'
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
+  const pathname = request.nextUrl.pathname
 
   if (pathname.startsWith('/ping')) {
     return new Response('pong', { status: 200 })
@@ -20,7 +20,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  const { supabaseResponse, user } = await updateSession(request)
+  const sessionResult = await updateSession(request)
+  const supabaseResponse = sessionResult.supabaseResponse
+  const user = sessionResult.user
 
   if (!user) {
     if (pathname.startsWith('/api/')) {

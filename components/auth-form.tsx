@@ -10,14 +10,14 @@ type Props = {
   type: 'signin' | 'signup'
 }
 
-export function AuthForm({ type }: Props) {
+export function AuthForm(props: Props) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
   const signInMutation = useSignIn()
   const signUpMutation = useSignUp()
 
-  const mutation = type === 'signin' ? signInMutation : signUpMutation
+  const mutation = props.type === 'signin' ? signInMutation : signUpMutation
   const isPending = mutation.isPending
   const error = mutation.error
 
@@ -49,7 +49,7 @@ export function AuthForm({ type }: Props) {
           placeholder="Password"
           required
           className="w-full"
-          minLength={type === 'signup' ? 6 : 1}
+          minLength={props.type === 'signup' ? 6 : 1}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
@@ -61,16 +61,16 @@ export function AuthForm({ type }: Props) {
 
       <Button type="submit" className="w-full" disabled={isPending}>
         {isPending
-          ? type === 'signin'
+          ? props.type === 'signin'
             ? 'Signing in...'
             : 'Creating account...'
-          : type === 'signin'
+          : props.type === 'signin'
             ? 'Sign In'
             : 'Create Account'}
       </Button>
 
       <div className="text-center text-sm text-muted-foreground">
-        {type === 'signin' ? (
+        {props.type === 'signin' ? (
           <>
             Don&apos;t have an account?{' '}
             <Link href="/register" className="text-primary hover:underline">

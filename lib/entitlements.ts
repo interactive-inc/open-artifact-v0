@@ -1,6 +1,6 @@
 import type { UserType } from '@/lib/supabase/types'
 
-interface Entitlements {
+type Entitlements = {
   maxMessagesPerDay: number
 }
 

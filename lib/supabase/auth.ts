@@ -16,17 +16,17 @@ type AuthSession = {
  */
 export async function auth(): Promise<AuthSession> {
   const supabase = await createClient()
-  const { data } = await supabase.auth.getUser()
+  const response = await supabase.auth.getUser()
 
-  if (!data.user) {
+  if (!response.data.user) {
     return null
   }
 
   return {
     user: {
-      id: data.user.id,
-      email: data.user.email,
-      type: getUserType(data.user.email),
+      id: response.data.user.id,
+      email: response.data.user.email,
+      type: getUserType(response.data.user.email),
     },
   }
 }

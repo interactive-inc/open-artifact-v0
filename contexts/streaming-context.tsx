@@ -2,13 +2,13 @@
 
 import { createContext, useContext, useState, ReactNode } from 'react'
 
-interface StreamingHandoff {
+type StreamingHandoff = {
   chatId: string | null
   stream: ReadableStream<Uint8Array> | null
   userMessage: string | null
 }
 
-interface StreamingContextType {
+type StreamingContextType = {
   handoff: StreamingHandoff
   startHandoff: (
     chatId: string,
@@ -28,11 +28,11 @@ export function useStreaming() {
   return context
 }
 
-interface StreamingProviderProps {
+type StreamingProviderProps = {
   children: ReactNode
 }
 
-export function StreamingProvider({ children }: StreamingProviderProps) {
+export function StreamingProvider(props: StreamingProviderProps) {
   const [handoff, setHandoff] = useState<StreamingHandoff>({
     chatId: null,
     stream: null,
@@ -59,7 +59,7 @@ export function StreamingProvider({ children }: StreamingProviderProps) {
         clearHandoff,
       }}
     >
-      {children}
+      {props.children}
     </StreamingContext.Provider>
   )
 }

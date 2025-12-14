@@ -33,43 +33,98 @@ export const visibilityBySurface: Record<Surface, ErrorVisibility> = {
   suggestions: 'response',
 }
 
+const errorCodeToStatusCode: Record<ErrorType, number> = {
+  bad_request: 400,
+  unauthorized: 401,
+  forbidden: 403,
+  not_found: 404,
+  rate_limit: 429,
+  offline: 503,
+}
+
+const errorCodeToMessage: Record<string, string> = {
+  'bad_request:api': "The request couldn't be processed. Please check your input and try again.",
+  'unauthorized:auth': 'You need to sign in before continuing.',
+  'forbidden:auth': 'Your account does not have access to this feature.',
+  'rate_limit:chat': 'You have exceeded your maximum number of messages for the day. Please try again later.',
+  'not_found:chat': 'The requested chat was not found. Please check the chat ID and try again.',
+  'forbidden:chat': 'This chat belongs to another user. Please check the chat ID and try again.',
+  'unauthorized:chat': 'You need to sign in to view this chat. Please sign in and try again.',
+  'offline:chat': "We're having trouble sending your message. Please check your internet connection and try again.",
+  'not_found:document': 'The requested document was not found. Please check the document ID and try again.',
+  'forbidden:document': 'This document belongs to another user. Please check the document ID and try again.',
+  'unauthorized:document': 'You need to sign in to view this document. Please sign in and try again.',
+  'bad_request:document': 'The request to create or update the document was invalid. Please check your input and try again.',
+}
+
+type ChatSDKErrorProps = {
+  readonly type: ErrorType
+  readonly surface: Surface
+  readonly statusCode: number
+  readonly errorMessage: string
+  readonly errorCause: string | undefined
+}
+
+/**
+ * ChatSDKError
+ */
 export class ChatSDKError extends Error {
-  public type: ErrorType
-  public surface: Surface
-  public statusCode: number
+  private readonly props: ChatSDKErrorProps
 
   constructor(errorCode: ErrorCode, cause?: string) {
     super()
 
-    const [type, surface] = errorCode.split(':')
+    const parts = errorCode.split(':')
+    const errorType = parts[0] as ErrorType
+    const errorSurface = parts[1] as Surface
 
-    this.type = type as ErrorType
+    this.props = {
+      type: errorType,
+      surface: errorSurface,
+      statusCode: errorCodeToStatusCode[errorType] || 500,
+      errorMessage: getMessageByErrorCode(errorCode),
+      errorCause: cause,
+    }
+
     this.cause = cause
-    this.surface = surface as Surface
-    this.message = getMessageByErrorCode(errorCode)
-    this.statusCode = getStatusCodeByType(this.type)
+    this.message = this.props.errorMessage
+
+    Object.freeze(this)
   }
 
-  public toResponse() {
-    const code: ErrorCode = `${this.type}:${this.surface}`
-    const visibility = visibilityBySurface[this.surface]
+  get type() {
+    return this.props.type
+  }
 
-    const { message, cause, statusCode } = this
+  get surface() {
+    return this.props.surface
+  }
+
+  get statusCode() {
+    return this.props.statusCode
+  }
+
+  toResponse() {
+    const code: ErrorCode = `${this.props.type}:${this.props.surface}`
+    const visibility = visibilityBySurface[this.props.surface]
 
     if (visibility === 'log') {
       console.error({
         code,
-        message,
-        cause,
+        message: this.props.errorMessage,
+        cause: this.props.errorCause,
       })
 
       return Response.json(
         { code: '', message: 'Something went wrong. Please try again later.' },
-        { status: statusCode },
+        { status: this.props.statusCode },
       )
     }
 
-    return Response.json({ code, message, cause }, { status: statusCode })
+    return Response.json(
+      { code, message: this.props.errorMessage, cause: this.props.errorCause },
+      { status: this.props.statusCode },
+    )
   }
 }
 
@@ -78,55 +133,10 @@ export function getMessageByErrorCode(errorCode: ErrorCode): string {
     return 'An error occurred while executing a database query.'
   }
 
-  switch (errorCode) {
-    case 'bad_request:api':
-      return "The request couldn't be processed. Please check your input and try again."
-
-    case 'unauthorized:auth':
-      return 'You need to sign in before continuing.'
-    case 'forbidden:auth':
-      return 'Your account does not have access to this feature.'
-
-    case 'rate_limit:chat':
-      return 'You have exceeded your maximum number of messages for the day. Please try again later.'
-    case 'not_found:chat':
-      return 'The requested chat was not found. Please check the chat ID and try again.'
-    case 'forbidden:chat':
-      return 'This chat belongs to another user. Please check the chat ID and try again.'
-    case 'unauthorized:chat':
-      return 'You need to sign in to view this chat. Please sign in and try again.'
-    case 'offline:chat':
-      return "We're having trouble sending your message. Please check your internet connection and try again."
-
-    case 'not_found:document':
-      return 'The requested document was not found. Please check the document ID and try again.'
-    case 'forbidden:document':
-      return 'This document belongs to another user. Please check the document ID and try again.'
-    case 'unauthorized:document':
-      return 'You need to sign in to view this document. Please sign in and try again.'
-    case 'bad_request:document':
-      return 'The request to create or update the document was invalid. Please check your input and try again.'
-
-    default:
-      return 'Something went wrong. Please try again later.'
+  const message = errorCodeToMessage[errorCode]
+  if (message) {
+    return message
   }
-}
 
-function getStatusCodeByType(type: ErrorType) {
-  switch (type) {
-    case 'bad_request':
-      return 400
-    case 'unauthorized':
-      return 401
-    case 'forbidden':
-      return 403
-    case 'not_found':
-      return 404
-    case 'rate_limit':
-      return 429
-    case 'offline':
-      return 503
-    default:
-      return 500
-  }
+  return 'Something went wrong. Please try again later.'
 }

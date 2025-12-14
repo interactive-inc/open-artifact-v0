@@ -53,7 +53,7 @@ export const createImageAttachment = async (
 // SessionStorage utilities for prompt persistence
 const PROMPT_STORAGE_KEY = 'v0-prompt-data'
 
-export interface StoredPromptData {
+export type StoredPromptData = {
   message: string
   attachments: Array<{
     id: string

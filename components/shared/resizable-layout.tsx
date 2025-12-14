@@ -2,9 +2,9 @@
 
 import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { cn } from '@/lib/utils'
-import { useIsMobile } from '@/lib/client-utils'
+import { useIsMobile } from '@/hooks/use-mobile'
 
-interface ResizableLayoutProps {
+type ResizableLayoutProps = {
   leftPanel: React.ReactNode
   rightPanel: React.ReactNode
   defaultLeftWidth?: number
@@ -15,16 +15,12 @@ interface ResizableLayoutProps {
   activePanel?: 'left' | 'right'
 }
 
-export function ResizableLayout({
-  leftPanel,
-  rightPanel,
-  defaultLeftWidth = 30,
-  minLeftWidth = 20,
-  maxLeftWidth = 60,
-  className,
-  singlePanelMode = false,
-  activePanel = 'left',
-}: ResizableLayoutProps) {
+export function ResizableLayout(props: ResizableLayoutProps) {
+  const defaultLeftWidth = props.defaultLeftWidth ?? 30
+  const minLeftWidth = props.minLeftWidth ?? 20
+  const maxLeftWidth = props.maxLeftWidth ?? 60
+  const singlePanelMode = props.singlePanelMode ?? false
+  const activePanel = props.activePanel ?? 'left'
   const [leftWidth, setLeftWidth] = useState(defaultLeftWidth)
   const [isDragging, setIsDragging] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -75,9 +71,9 @@ export function ResizableLayout({
 
   if (singlePanelMode) {
     return (
-      <div ref={containerRef} className={cn('flex flex-col h-full', className)}>
+      <div ref={containerRef} className={cn('flex flex-col h-full', props.className)}>
         <div className="flex-1 flex flex-col min-h-0">
-          {activePanel === 'left' ? leftPanel : rightPanel}
+          {activePanel === 'left' ? props.leftPanel : props.rightPanel}
         </div>
       </div>
     )
@@ -87,9 +83,9 @@ export function ResizableLayout({
   // On desktop, always render both to prevent iframe remounting
   if (isMobile) {
     return (
-      <div ref={containerRef} className={cn('flex h-full', className)}>
+      <div ref={containerRef} className={cn('flex h-full', props.className)}>
         <div className="flex flex-col h-full w-full">
-          {activePanel === 'left' ? leftPanel : rightPanel}
+          {activePanel === 'left' ? props.leftPanel : props.rightPanel}
         </div>
       </div>
     )
@@ -97,9 +93,9 @@ export function ResizableLayout({
 
   // Desktop: Always render both panels to prevent remounting on resize
   return (
-    <div ref={containerRef} className={cn('flex h-full', className)}>
+    <div ref={containerRef} className={cn('flex h-full', props.className)}>
       <div className="flex flex-col" style={{ width: `${leftWidth}%` }}>
-        {leftPanel}
+        {props.leftPanel}
       </div>
 
       <div
@@ -119,7 +115,7 @@ export function ResizableLayout({
         <div className="absolute inset-y-0 -left-2 -right-2" />
       </div>
 
-      <div className="flex-1 flex flex-col">{rightPanel}</div>
+      <div className="flex-1 flex flex-col">{props.rightPanel}</div>
     </div>
   )
 }

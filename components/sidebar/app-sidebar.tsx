@@ -34,7 +34,6 @@ export function AppSidebar() {
   const signOutMutation = useSignOut()
 
   const userEmail = sessionData.data?.user?.email
-  const userInitials = userEmail?.split('@')[0]?.slice(0, 2)?.toUpperCase() || 'U'
 
   return (
     <Sidebar>

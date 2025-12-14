@@ -22,21 +22,15 @@ type PreviewPanelProps = {
   setRefreshKey: (key: number | ((prev: number) => number)) => void
 }
 
-export function PreviewPanel({
-  currentChat,
-  isFullscreen,
-  setIsFullscreen,
-  refreshKey,
-  setRefreshKey,
-}: PreviewPanelProps) {
+export function PreviewPanel(props: PreviewPanelProps) {
   return (
     <div
       className={cn(
         'flex flex-col h-full transition-all duration-300',
-        isFullscreen ? 'fixed inset-0 z-50 bg-background p-0' : 'p-2',
+        props.isFullscreen ? 'fixed inset-0 z-50 bg-background p-0' : 'p-2',
       )}
     >
-      <Card className="p-0 flex flex-col h-full overflow-hidden">
+      <Card className="p-0 gap-0 flex flex-col h-full overflow-hidden">
         <div className="flex items-center gap-2 px-3 py-2 border-b bg-muted/50">
           <div className="flex items-center gap-1.5">
             <Circle className="size-3 fill-red-500 text-red-500" />
@@ -46,14 +40,14 @@ export function PreviewPanel({
           <Input
             readOnly
             placeholder="Your app will appear here..."
-            value={currentChat?.demo || ''}
+            value={props.currentChat?.demo || ''}
             className="flex-1 h-7 text-xs bg-background"
           />
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setRefreshKey((prev) => prev + 1)}
-            disabled={!currentChat?.demo}
+            onClick={() => props.setRefreshKey((prev) => prev + 1)}
+            disabled={!props.currentChat?.demo}
             className="size-7"
           >
             <RefreshCw className="size-3.5" />
@@ -61,11 +55,11 @@ export function PreviewPanel({
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setIsFullscreen(!isFullscreen)}
-            disabled={!currentChat?.demo}
+            onClick={() => props.setIsFullscreen(!props.isFullscreen)}
+            disabled={!props.currentChat?.demo}
             className="size-7"
           >
-            {isFullscreen ? (
+            {props.isFullscreen ? (
               <Minimize className="size-3.5" />
             ) : (
               <Maximize className="size-3.5" />
@@ -73,9 +67,9 @@ export function PreviewPanel({
           </Button>
         </div>
         <div className="flex-1 min-h-0">
-          {currentChat?.demo ? (
-            <WebPreview defaultUrl={currentChat.demo}>
-              <WebPreviewBody key={refreshKey} src={currentChat.demo} className="h-full" />
+          {props.currentChat?.demo ? (
+            <WebPreview defaultUrl={props.currentChat.demo}>
+              <WebPreviewBody key={props.refreshKey} src={props.currentChat.demo} className="h-full" />
             </WebPreview>
           ) : (
             <div className="h-full flex items-center justify-center bg-muted/30">

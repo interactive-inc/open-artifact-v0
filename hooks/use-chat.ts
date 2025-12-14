@@ -1,43 +1,113 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
+import type { MessageBinaryFormat } from '@v0-sdk/react'
 import { useStreaming } from '@/contexts/streaming-context'
 import { useChat as useChatQuery, chatKeys } from '@/hooks/api/use-chats'
 import { client } from '@/lib/api/client'
+
+type StoredMessage = {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  experimental_content?: MessageBinaryFormat
+}
 
 type Chat = {
   id: string
   demo?: string
   url?: string
-  messages?: Array<{
-    id: string
-    role: 'user' | 'assistant'
-    content: string
-    experimental_content?: any
-  }>
+  messages?: Array<StoredMessage>
 }
 
-type ChatMessage = {
+type HistoryMessage = {
   type: 'user' | 'assistant'
-  content: string | any
+  content: string | MessageBinaryFormat
   isStreaming?: boolean
   stream?: ReadableStream<Uint8Array> | null
 }
 
+type ChatDetails = {
+  id?: string
+  demo?: string
+  latestVersion?: {
+    demoUrl?: string
+  }
+  webUrl?: string
+  url?: string
+  error?: string
+}
+
+function getErrorMessage(response: Response, errorData: Record<string, unknown>): string {
+  if ('message' in errorData && typeof errorData.message === 'string') {
+    return errorData.message
+  }
+  if (response.status === 429) {
+    return 'You have exceeded your maximum number of messages for the day. Please try again later.'
+  }
+  return 'Sorry, there was an error processing your message. Please try again.'
+}
+
+function extractDemoUrl(chatDetails: ChatDetails): string | undefined {
+  if (chatDetails.latestVersion?.demoUrl) {
+    return chatDetails.latestVersion.demoUrl
+  }
+  return chatDetails.demo
+}
+
+function findChatIdInObject(obj: unknown, foundId: { value: string | undefined }): void {
+  if (!obj || typeof obj !== 'object') {
+    return
+  }
+
+  const record = obj as Record<string, unknown>
+
+  if (record.chatId && typeof record.chatId === 'string') {
+    if (record.chatId.length > 10 && record.chatId !== 'hello-world') {
+      console.log('Accepting chatId:', record.chatId)
+      foundId.value = record.chatId
+      return
+    }
+  }
+
+  if (!foundId.value && record.id && typeof record.id === 'string') {
+    const id = record.id
+    if ((id.includes('-') && id.length > 20) || (id.length > 15 && id !== 'hello-world')) {
+      console.log('Accepting id as chatId:', id)
+      foundId.value = id
+      return
+    }
+  }
+
+  if (Array.isArray(obj)) {
+    for (const item of obj) {
+      findChatIdInObject(item, foundId)
+      if (foundId.value) return
+    }
+  } else {
+    for (const value of Object.values(record)) {
+      findChatIdInObject(value, foundId)
+      if (foundId.value) return
+    }
+  }
+}
+
+/**
+ * Chat hook
+ */
 export function useChat(chatId: string) {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const { handoff, clearHandoff } = useStreaming()
+  const streamingContext = useStreaming()
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isStreaming, setIsStreaming] = useState(false)
-  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([])
+  const [chatHistory, setChatHistory] = useState<HistoryMessage[]>([])
 
-  const {
-    data: currentChat,
-    error,
-    isLoading: isLoadingChat,
-  } = useChatQuery(chatId || null)
+  const chatQueryResult = useChatQuery(chatId || null)
+  const currentChat = chatQueryResult.data
+  const error = chatQueryResult.error
+  const isLoadingChat = chatQueryResult.isLoading
 
   useEffect(() => {
     if (error) {
@@ -52,26 +122,28 @@ export function useChat(chatId: string) {
     if (
       chat?.messages &&
       chatHistory.length === 0 &&
-      !(handoff.chatId === chatId && handoff.stream)
+      !(streamingContext.handoff.chatId === chatId && streamingContext.handoff.stream)
     ) {
-      setChatHistory(
-        chat.messages.map((msg) => ({
+      const messages: HistoryMessage[] = []
+      for (const msg of chat.messages) {
+        messages.push({
           type: msg.role,
           content: msg.experimental_content || msg.content,
-        })),
-      )
+        })
+      }
+      setChatHistory(messages)
     }
-  }, [currentChat, chatHistory.length, handoff.chatId, handoff.stream, chatId])
+  }, [currentChat, chatHistory.length, streamingContext.handoff.chatId, streamingContext.handoff.stream, chatId])
 
   useEffect(() => {
-    if (handoff.chatId === chatId && handoff.stream && handoff.userMessage) {
+    if (streamingContext.handoff.chatId === chatId && streamingContext.handoff.stream && streamingContext.handoff.userMessage) {
       console.log('Continuing streaming from context for chat:', chatId)
 
       setChatHistory((prev) => [
         ...prev,
         {
           type: 'user',
-          content: handoff.userMessage!,
+          content: streamingContext.handoff.userMessage!,
         },
       ])
 
@@ -82,13 +154,13 @@ export function useChat(chatId: string) {
           type: 'assistant',
           content: [],
           isStreaming: true,
-          stream: handoff.stream,
+          stream: streamingContext.handoff.stream,
         },
       ])
 
-      clearHandoff()
+      streamingContext.clearHandoff()
     }
-  }, [chatId, handoff, clearHandoff])
+  }, [chatId, streamingContext.handoff, streamingContext.clearHandoff, streamingContext])
 
   const handleSendMessage = async (
     e: React.FormEvent<HTMLFormElement>,
@@ -114,23 +186,19 @@ export function useChat(chatId: string) {
       })
 
       if (!response.ok) {
-        let errorMessage =
-          'Sorry, there was an error processing your message. Please try again.'
-        try {
-          const errorData = await response.json() as Record<string, unknown>
-          if ('message' in errorData && typeof errorData.message === 'string') {
-            errorMessage = errorData.message
-          } else if (response.status === 429) {
-            errorMessage =
-              'You have exceeded your maximum number of messages for the day. Please try again later.'
+        const defaultMessage = 'Sorry, there was an error processing your message. Please try again.'
+        const errorMessage = await (async () => {
+          try {
+            const errorData = await response.json() as Record<string, unknown>
+            return getErrorMessage(response, errorData)
+          } catch (parseError) {
+            console.error('Error parsing error response:', parseError)
+            if (response.status === 429) {
+              return 'You have exceeded your maximum number of messages for the day. Please try again later.'
+            }
+            return defaultMessage
           }
-        } catch (parseError) {
-          console.error('Error parsing error response:', parseError)
-          if (response.status === 429) {
-            errorMessage =
-              'You have exceeded your maximum number of messages for the day. Please try again later.'
-          }
-        }
+        })()
         throw new Error(errorMessage)
       }
 
@@ -149,12 +217,12 @@ export function useChat(chatId: string) {
           stream: response.body,
         },
       ])
-    } catch (error) {
-      console.error('Error:', error)
+    } catch (err) {
+      console.error('Error:', err)
 
       const errorMessage =
-        error instanceof Error
-          ? error.message
+        err instanceof Error
+          ? err.message
           : 'Sorry, there was an error processing your message. Please try again.'
 
       setChatHistory((prev) => [
@@ -168,7 +236,7 @@ export function useChat(chatId: string) {
     }
   }
 
-  const handleStreamingComplete = async (finalContent: any) => {
+  const handleStreamingComplete = async (finalContent: string | MessageBinaryFormat) => {
     setIsStreaming(false)
     setIsLoading(false)
 
@@ -183,59 +251,41 @@ export function useChat(chatId: string) {
       })
 
       if (response.ok) {
-        const chatDetails = await response.json()
+        const chatDetails = await response.json() as ChatDetails
 
         if ('error' in chatDetails) {
           console.warn('Failed to fetch updated chat details:', chatDetails.error)
           queryClient.invalidateQueries({ queryKey: chatKeys.detail(chatId) })
-        } else {
-          const demoUrl = (chatDetails as any)?.latestVersion?.demoUrl || (chatDetails as any)?.demo
+        }
+
+        if (!('error' in chatDetails)) {
+          const demoUrl = extractDemoUrl(chatDetails)
 
           queryClient.setQueryData(chatKeys.detail(chatId), {
             ...chatDetails,
             demo: demoUrl,
           })
         }
-      } else {
+      }
+
+      if (!response.ok) {
         console.warn('Failed to fetch updated chat details:', response.status)
         queryClient.invalidateQueries({ queryKey: chatKeys.detail(chatId) })
       }
-    } catch (error) {
-      console.error('Error fetching updated chat details:', error)
+    } catch (err) {
+      console.error('Error fetching updated chat details:', err)
       queryClient.invalidateQueries({ queryKey: chatKeys.detail(chatId) })
     }
 
     if (!currentChat && finalContent && Array.isArray(finalContent)) {
-      let newChatId: string | undefined
+      const foundId = { value: undefined as string | undefined }
 
-      const searchForChatId = (obj: any) => {
-        if (obj && typeof obj === 'object') {
-          if (obj.chatId && typeof obj.chatId === 'string') {
-            if (obj.chatId.length > 10 && obj.chatId !== 'hello-world') {
-              console.log('Accepting chatId:', obj.chatId)
-              newChatId = obj.chatId
-            }
-          }
-
-          if (!newChatId && obj.id && typeof obj.id === 'string') {
-            if (
-              (obj.id.includes('-') && obj.id.length > 20) ||
-              (obj.id.length > 15 && obj.id !== 'hello-world')
-            ) {
-              console.log('Accepting id as chatId:', obj.id)
-              newChatId = obj.id
-            }
-          }
-
-          if (Array.isArray(obj)) {
-            obj.forEach(searchForChatId)
-          } else {
-            Object.values(obj).forEach(searchForChatId)
-          }
-        }
+      for (const item of finalContent) {
+        findChatIdInObject(item, foundId)
+        if (foundId.value) break
       }
 
-      finalContent.forEach(searchForChatId)
+      const newChatId = foundId.value
 
       if (newChatId) {
         console.log('Found chat ID:', newChatId)
@@ -247,12 +297,11 @@ export function useChat(chatId: string) {
           })
 
           if (response.ok) {
-            const chatDetails = await response.json()
+            const chatDetails = await response.json() as ChatDetails
             console.log('Chat details:', chatDetails)
 
             if (!('error' in chatDetails)) {
-              const demoUrl =
-                (chatDetails as any)?.latestVersion?.demoUrl || (chatDetails as any)?.demo
+              const demoUrl = extractDemoUrl(chatDetails)
               console.log('Demo URL from chat details:', demoUrl)
 
               queryClient.setQueryData(chatKeys.detail(newChatId), {
@@ -261,21 +310,25 @@ export function useChat(chatId: string) {
                 demo: demoUrl || `Generated Chat ${newChatId}`,
               })
             }
-          } else {
+          }
+
+          if (!response.ok) {
             console.warn('Failed to fetch chat details:', response.status)
             queryClient.setQueryData(chatKeys.detail(newChatId), {
               id: newChatId,
               demo: `Generated Chat ${newChatId}`,
             })
           }
-        } catch (error) {
-          console.error('Error fetching chat details:', error)
+        } catch (err) {
+          console.error('Error fetching chat details:', err)
           queryClient.setQueryData(chatKeys.detail(newChatId), {
             id: newChatId,
             demo: `Generated Chat ${newChatId}`,
           })
         }
-      } else {
+      }
+
+      if (!newChatId) {
         console.log('No chat ID found in final content')
       }
     }
@@ -295,7 +348,7 @@ export function useChat(chatId: string) {
     })
   }
 
-  const handleChatData = async (chatData: any) => {
+  const handleChatData = async (chatData: ChatDetails) => {
     if (chatData.id && !currentChat) {
       queryClient.setQueryData(chatKeys.detail(chatData.id), {
         id: chatData.id,
