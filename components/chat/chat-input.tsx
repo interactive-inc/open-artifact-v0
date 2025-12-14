@@ -109,7 +109,7 @@ export function ChatInput(props: Props) {
   )
 
   return (
-    <div className="px-4 md:pb-4">
+    <div className="p-2">
       <div className="flex gap-2">
         <PromptInput
           onSubmit={handleSubmit}

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 
 export function ChatHeader() {
   return (
-    <div className="flex items-center gap-2 border-b bg-background/95 px-3 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="flex items-center gap-2 bg-background/95 p-2 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <Button variant="ghost" size="icon" asChild className="size-8">
         <Link href="/?reset=true">
           <Home className="size-4" />

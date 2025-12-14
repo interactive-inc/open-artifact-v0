@@ -104,7 +104,7 @@ export function ResizableLayout(props: ResizableLayoutProps) {
 
       <div
         className={cn(
-          "group relative w-px cursor-col-resize bg-border transition-all dark:bg-input",
+          "group relative w-px cursor-col-resize bg-transparent transition-all",
           isDragging && "bg-blue-500 dark:bg-blue-400",
         )}
         onMouseDown={handleMouseDown}

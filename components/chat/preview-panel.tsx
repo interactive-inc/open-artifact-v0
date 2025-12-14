@@ -27,7 +27,7 @@ export function PreviewPanel(props: Props) {
     <div
       className={cn(
         "flex h-full flex-col transition-all duration-300",
-        props.isFullscreen ? "fixed inset-0 z-50 bg-background p-0" : "p-2",
+        props.isFullscreen ? "fixed inset-0 z-50 bg-background p-0" : "py-2 pr-2",
       )}
     >
       <Card className="flex h-full flex-col gap-0 overflow-hidden p-0">
