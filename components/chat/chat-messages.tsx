@@ -64,7 +64,7 @@ export function ChatMessages(props: Props) {
   }
 
   return (
-    <div className={cn('relative', isLocked && 'pointer-events-none select-none')}>
+    <div className={cn('relative p-2', isLocked && 'pointer-events-none select-none')}>
       <Conversation>
         <ConversationContent>
           {props.chatHistory.map((msg, index) => (

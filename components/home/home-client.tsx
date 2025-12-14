@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, Suspense } from 'react'
+import { useState, useEffect, useRef, Suspense, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import type { MessageBinaryFormat } from '@v0-sdk/react'
@@ -21,6 +21,7 @@ import {
   type ImageAttachment,
 } from '@/components/ai-elements/prompt-input'
 import { Suggestions, Suggestion } from '@/components/ai-elements/suggestion'
+import { ChatHeader } from '@/components/chat/chat-header'
 import { ChatMessages } from '@/components/chat/chat-messages'
 import { ChatInput } from '@/components/chat/chat-input'
 import { PreviewPanel } from '@/components/chat/preview-panel'
@@ -71,7 +72,7 @@ export function HomeClient() {
   const router = useRouter()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     setShowChatInterface(false)
     setChatHistory([])
     setCurrentChatId(null)
@@ -90,7 +91,7 @@ export function HomeClient() {
         textareaRef.current.focus()
       }
     }, 0)
-  }
+  }, [])
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -396,6 +397,7 @@ export function HomeClient() {
           activePanel={activePanel === 'chat' ? 'left' : 'right'}
           leftPanel={
             <div className="flex flex-col h-full">
+              <ChatHeader />
               <div className="flex-1 min-h-0 overflow-y-auto">
                 <ChatMessages
                   chatHistory={chatHistory}

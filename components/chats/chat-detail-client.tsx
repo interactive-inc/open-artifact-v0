@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
+import { ChatHeader } from '@/components/chat/chat-header'
 import { ChatMessages } from '@/components/chat/chat-messages'
 import { ChatInput } from '@/components/chat/chat-input'
 import { PreviewPanel } from '@/components/chat/preview-panel'
@@ -67,6 +68,7 @@ export function ChatDetailClient() {
         activePanel={activePanel === 'chat' ? 'left' : 'right'}
         leftPanel={
           <div className="flex flex-col h-full">
+            <ChatHeader />
             <div className="flex-1 min-h-0 overflow-y-auto">
               <ChatMessages
                 chatHistory={chatState.chatHistory}
