@@ -1,9 +1,11 @@
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
+import { EnvSetup } from "@/components/env-setup"
 import { QueryProvider } from "@/components/providers/query-provider"
 import { SessionProvider } from "@/components/providers/session-provider"
 import { StreamingProvider } from "@/contexts/streaming-context"
+import { checkRequiredEnvVars } from "@/lib/env-check"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,6 +28,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const missingVars = checkRequiredEnvVars()
+  const isDevelopment = process.env.NODE_ENV === "development"
+  const showEnvSetup = missingVars.length > 0 && isDevelopment
+
   return (
     <html lang="en" suppressHydrationWarning className="h-full overflow-hidden">
       <head>
@@ -38,7 +44,7 @@ export default function RootLayout({
                 } else {
                   document.documentElement.classList.remove('dark');
                 }
-                
+
                 // Listen for changes in system preference
                 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
                   if (e.matches) {
@@ -55,11 +61,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} h-full overflow-hidden antialiased`}
       >
-        <SessionProvider>
-          <QueryProvider>
-            <StreamingProvider>{children}</StreamingProvider>
-          </QueryProvider>
-        </SessionProvider>
+        {showEnvSetup ? (
+          <EnvSetup missingVars={missingVars} />
+        ) : (
+          <SessionProvider>
+            <QueryProvider>
+              <StreamingProvider>{children}</StreamingProvider>
+            </QueryProvider>
+          </SessionProvider>
+        )}
       </body>
     </html>
   )
