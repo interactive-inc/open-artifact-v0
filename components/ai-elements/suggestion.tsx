@@ -1,10 +1,10 @@
-'use client'
+"use client"
 
-import { Button } from '@/components/ui/button'
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import { cn } from '@/lib/utils'
-import { useEffect, useRef, useState } from 'react'
-import type { ComponentProps } from 'react'
+import type { ComponentProps } from "react"
+import { useEffect, useRef, useState } from "react"
+import { Button } from "@/components/ui/button"
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import { cn } from "@/lib/utils"
 
 export type SuggestionsProps = ComponentProps<typeof ScrollArea>
 
@@ -19,7 +19,7 @@ export const Suggestions = ({
 
   const checkScrollability = () => {
     const scrollArea = scrollAreaRef.current?.querySelector(
-      '[data-radix-scroll-area-viewport]',
+      "[data-radix-scroll-area-viewport]",
     ) as HTMLElement
     if (!scrollArea) return
 
@@ -30,7 +30,7 @@ export const Suggestions = ({
 
   useEffect(() => {
     const scrollArea = scrollAreaRef.current?.querySelector(
-      '[data-radix-scroll-area-viewport]',
+      "[data-radix-scroll-area-viewport]",
     ) as HTMLElement
     if (!scrollArea) return
 
@@ -38,28 +38,28 @@ export const Suggestions = ({
     checkScrollability()
 
     // Add scroll listener
-    scrollArea.addEventListener('scroll', checkScrollability)
+    scrollArea.addEventListener("scroll", checkScrollability)
 
     // Add resize observer to handle container size changes
     const resizeObserver = new ResizeObserver(checkScrollability)
     resizeObserver.observe(scrollArea)
 
     return () => {
-      scrollArea.removeEventListener('scroll', checkScrollability)
+      scrollArea.removeEventListener("scroll", checkScrollability)
       resizeObserver.disconnect()
     }
-  }, [children])
+  }, [checkScrollability])
 
   return (
     <div className="relative">
       {/* Left fade overlay */}
       {canScrollLeft && (
-        <div className="absolute -left-px -top-px z-10 h-[calc(100%+1px)] w-12 bg-gradient-to-r from-gray-50 dark:from-black to-transparent pointer-events-none" />
+        <div className="-left-px -top-px pointer-events-none absolute z-10 h-[calc(100%+1px)] w-12 bg-gradient-to-r from-gray-50 to-transparent dark:from-black" />
       )}
 
       {/* Right fade overlay */}
       {canScrollRight && (
-        <div className="absolute -right-px -top-px z-10 h-[calc(100%+1px)] w-12 bg-gradient-to-l from-gray-50 dark:from-black to-transparent pointer-events-none" />
+        <div className="-right-px -top-px pointer-events-none absolute z-10 h-[calc(100%+1px)] w-12 bg-gradient-to-l from-gray-50 to-transparent dark:from-black" />
       )}
 
       <ScrollArea
@@ -68,7 +68,7 @@ export const Suggestions = ({
         {...props}
       >
         <div
-          className={cn('flex w-max flex-nowrap items-center gap-2', className)}
+          className={cn("flex w-max flex-nowrap items-center gap-2", className)}
         >
           {children}
         </div>
@@ -78,7 +78,7 @@ export const Suggestions = ({
   )
 }
 
-export type SuggestionProps = Omit<ComponentProps<typeof Button>, 'onClick'> & {
+export type SuggestionProps = Omit<ComponentProps<typeof Button>, "onClick"> & {
   suggestion: string
   onClick?: (suggestion: string) => void
 }
@@ -87,8 +87,8 @@ export const Suggestion = ({
   suggestion,
   onClick,
   className,
-  variant = 'outline',
-  size = 'sm',
+  variant = "outline",
+  size = "sm",
   children,
   ...props
 }: SuggestionProps) => {
@@ -98,7 +98,7 @@ export const Suggestion = ({
 
   return (
     <Button
-      className={cn('cursor-pointer rounded-full px-4', className)}
+      className={cn("cursor-pointer rounded-full px-4", className)}
       onClick={handleClick}
       size={size}
       type="button"

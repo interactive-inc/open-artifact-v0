@@ -1,11 +1,13 @@
-import type { Context, Next } from 'hono'
-import type { CookieMethodsServer } from '@supabase/ssr'
-import { createServerClient } from '@supabase/ssr'
-import { setCookie } from 'hono/cookie'
-import { getUserType } from '@/lib/supabase/types'
+import type { CookieMethodsServer } from "@supabase/ssr"
+import { createServerClient } from "@supabase/ssr"
+import type { Context, Next } from "hono"
+import { setCookie } from "hono/cookie"
+import { getUserType } from "@/lib/supabase/types"
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
-const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || 'placeholder-key'
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co"
+const supabasePublishableKey =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "placeholder-key"
 
 export type AuthUser = {
   id: string
@@ -19,13 +21,15 @@ export type AuthContext = {
   }
 }
 
-function parseCookieHeader(cookieHeader: string): Array<{ name: string; value: string }> {
+function parseCookieHeader(
+  cookieHeader: string,
+): Array<{ name: string; value: string }> {
   const cookies: Array<{ name: string; value: string }> = []
-  const pairs = cookieHeader.split(';')
+  const pairs = cookieHeader.split(";")
 
   for (const pair of pairs) {
     const trimmed = pair.trim()
-    const eqIndex = trimmed.indexOf('=')
+    const eqIndex = trimmed.indexOf("=")
     if (eqIndex > 0) {
       const name = trimmed.substring(0, eqIndex)
       const value = trimmed.substring(eqIndex + 1)
@@ -36,21 +40,23 @@ function parseCookieHeader(cookieHeader: string): Array<{ name: string; value: s
   return cookies
 }
 
-function normalizeSameSite(value: boolean | 'lax' | 'strict' | 'none' | undefined): 'Strict' | 'Lax' | 'None' | undefined {
+function normalizeSameSite(
+  value: boolean | "lax" | "strict" | "none" | undefined,
+): "Strict" | "Lax" | "None" | undefined {
   if (value === undefined || value === false) {
     return undefined
   }
   if (value === true) {
-    return 'Strict'
+    return "Strict"
   }
-  if (value === 'strict') {
-    return 'Strict'
+  if (value === "strict") {
+    return "Strict"
   }
-  if (value === 'lax') {
-    return 'Lax'
+  if (value === "lax") {
+    return "Lax"
   }
-  if (value === 'none') {
-    return 'None'
+  if (value === "none") {
+    return "None"
   }
   return undefined
 }
@@ -61,7 +67,7 @@ function normalizeSameSite(value: boolean | 'lax' | 'strict' | 'none' | undefine
 export async function authMiddleware(c: Context<AuthContext>, next: Next) {
   const cookieMethods: CookieMethodsServer = {
     getAll() {
-      const cookieHeader = c.req.header('cookie') || ''
+      const cookieHeader = c.req.header("cookie") || ""
       return parseCookieHeader(cookieHeader)
     },
     setAll(cookiesToSet) {
@@ -87,7 +93,7 @@ export async function authMiddleware(c: Context<AuthContext>, next: Next) {
   const response = await supabase.auth.getUser()
 
   if (response.data.user) {
-    c.set('user', {
+    c.set("user", {
       id: response.data.user.id,
       email: response.data.user.email,
       type: getUserType(response.data.user.email),
@@ -95,7 +101,7 @@ export async function authMiddleware(c: Context<AuthContext>, next: Next) {
   }
 
   if (!response.data.user) {
-    c.set('user', null)
+    c.set("user", null)
   }
 
   await next()
@@ -105,10 +111,10 @@ export async function authMiddleware(c: Context<AuthContext>, next: Next) {
  * Require auth middleware for Hono
  */
 export function requireAuth(c: Context<AuthContext>, next: Next) {
-  const user = c.get('user')
+  const user = c.get("user")
 
   if (!user) {
-    return c.json({ error: 'Authentication required' }, 401)
+    return c.json({ error: "Authentication required" }, 401)
   }
 
   return next()

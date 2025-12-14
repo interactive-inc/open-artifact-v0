@@ -1,4 +1,4 @@
-import { hashSync } from 'bcrypt-ts'
+import { hashSync } from "bcrypt-ts"
 
 export function generateHashedPassword(plainTextPassword: string): string {
   const saltRounds = 10

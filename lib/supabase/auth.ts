@@ -1,7 +1,7 @@
-import 'server-only'
+import "server-only"
 
-import { createClient } from './server'
-import { getUserType, type UserType } from './types'
+import { createClient } from "./server"
+import { getUserType, type UserType } from "./types"
 
 type AuthSession = {
   user: {

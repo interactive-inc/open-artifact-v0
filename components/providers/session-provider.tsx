@@ -1,9 +1,9 @@
-'use client'
+"use client"
 
-import { createContext, useContext, useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import type { User } from '@supabase/supabase-js'
-import { getUserType, type UserType } from '@/lib/supabase/types'
+import type { User } from "@supabase/supabase-js"
+import { createContext, useContext, useEffect, useState } from "react"
+import { createClient } from "@/lib/supabase/client"
+import { getUserType, type UserType } from "@/lib/supabase/types"
 
 type Session = {
   user: User & { type: UserType }
@@ -45,7 +45,7 @@ export function SessionProvider(props: Props) {
     fetchSession()
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, supabaseSession) => {
+      async (_event, supabaseSession) => {
         if (supabaseSession?.user) {
           setSession({
             user: {
@@ -77,9 +77,9 @@ export function useSession() {
   return {
     data: context.session,
     status: context.isLoading
-      ? 'loading'
+      ? "loading"
       : context.session
-        ? 'authenticated'
-        : 'unauthenticated',
+        ? "authenticated"
+        : "unauthenticated",
   }
 }

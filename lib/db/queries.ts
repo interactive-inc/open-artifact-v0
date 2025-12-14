@@ -1,13 +1,12 @@
-import 'server-only'
+import "server-only"
 
-import { and, count, desc, eq, gte } from 'drizzle-orm'
-
-import { users, chat_ownerships, anonymous_chat_logs } from './schema'
-import db from './connection'
+import { and, count, desc, eq, gte } from "drizzle-orm"
+import db from "./connection"
+import { anonymous_chat_logs, chat_ownerships, users } from "./schema"
 
 function getDb() {
   if (!db) {
-    throw new Error('Database connection not available')
+    throw new Error("Database connection not available")
   }
   return db
 }
@@ -27,7 +26,7 @@ export async function ensureUserExists(props: EnsureUserExistsProps) {
       .values({ id: props.id, email: props.email })
       .onConflictDoNothing({ target: users.id })
   } catch (error) {
-    console.error('Failed to ensure user exists in database')
+    console.error("Failed to ensure user exists in database")
     throw error
   }
 }
@@ -50,7 +49,7 @@ export async function createChatOwnership(props: CreateChatOwnershipProps) {
       })
       .onConflictDoNothing({ target: chat_ownerships.v0_chat_id })
   } catch (error) {
-    console.error('Failed to create chat ownership in database')
+    console.error("Failed to create chat ownership in database")
     throw error
   }
 }
@@ -70,7 +69,7 @@ export async function getChatOwnership(props: GetChatOwnershipProps) {
       .where(eq(chat_ownerships.v0_chat_id, props.v0ChatId))
     return results[0]
   } catch (error) {
-    console.error('Failed to get chat ownership from database')
+    console.error("Failed to get chat ownership from database")
     throw error
   }
 }
@@ -82,7 +81,9 @@ type GetChatIdsByUserIdProps = {
 /**
  * Get chat IDs by user ID
  */
-export async function getChatIdsByUserId(props: GetChatIdsByUserIdProps): Promise<string[]> {
+export async function getChatIdsByUserId(
+  props: GetChatIdsByUserIdProps,
+): Promise<string[]> {
   try {
     const ownerships = await getDb()
       .select({ v0ChatId: chat_ownerships.v0_chat_id })
@@ -96,7 +97,7 @@ export async function getChatIdsByUserId(props: GetChatIdsByUserIdProps): Promis
     }
     return result
   } catch (error) {
-    console.error('Failed to get chat IDs by user from database')
+    console.error("Failed to get chat IDs by user from database")
     throw error
   }
 }
@@ -114,7 +115,7 @@ export async function deleteChatOwnership(props: DeleteChatOwnershipProps) {
       .delete(chat_ownerships)
       .where(eq(chat_ownerships.v0_chat_id, props.v0ChatId))
   } catch (error) {
-    console.error('Failed to delete chat ownership from database')
+    console.error("Failed to delete chat ownership from database")
     throw error
   }
 }
@@ -127,9 +128,13 @@ type GetChatCountByUserIdProps = {
 /**
  * Get chat count by user ID for rate limiting
  */
-export async function getChatCountByUserId(props: GetChatCountByUserIdProps): Promise<number> {
+export async function getChatCountByUserId(
+  props: GetChatCountByUserIdProps,
+): Promise<number> {
   try {
-    const hoursAgo = new Date(Date.now() - props.differenceInHours * 60 * 60 * 1000)
+    const hoursAgo = new Date(
+      Date.now() - props.differenceInHours * 60 * 60 * 1000,
+    )
 
     const results = await getDb()
       .select({ count: count(chat_ownerships.id) })
@@ -144,7 +149,7 @@ export async function getChatCountByUserId(props: GetChatCountByUserIdProps): Pr
     const stats = results[0]
     return stats?.count || 0
   } catch (error) {
-    console.error('Failed to get chat count by user from database')
+    console.error("Failed to get chat count by user from database")
     throw error
   }
 }
@@ -157,9 +162,13 @@ type GetChatCountByIPProps = {
 /**
  * Get chat count by IP for rate limiting
  */
-export async function getChatCountByIP(props: GetChatCountByIPProps): Promise<number> {
+export async function getChatCountByIP(
+  props: GetChatCountByIPProps,
+): Promise<number> {
   try {
-    const hoursAgo = new Date(Date.now() - props.differenceInHours * 60 * 60 * 1000)
+    const hoursAgo = new Date(
+      Date.now() - props.differenceInHours * 60 * 60 * 1000,
+    )
 
     const results = await getDb()
       .select({ count: count(anonymous_chat_logs.id) })
@@ -174,7 +183,7 @@ export async function getChatCountByIP(props: GetChatCountByIPProps): Promise<nu
     const stats = results[0]
     return stats?.count || 0
   } catch (error) {
-    console.error('Failed to get chat count by IP from database')
+    console.error("Failed to get chat count by IP from database")
     throw error
   }
 }
@@ -187,14 +196,16 @@ type CreateAnonymousChatLogProps = {
 /**
  * Create anonymous chat log
  */
-export async function createAnonymousChatLog(props: CreateAnonymousChatLogProps) {
+export async function createAnonymousChatLog(
+  props: CreateAnonymousChatLogProps,
+) {
   try {
     return await getDb().insert(anonymous_chat_logs).values({
       ip_address: props.ipAddress,
       v0_chat_id: props.v0ChatId,
     })
   } catch (error) {
-    console.error('Failed to create anonymous chat log in database')
+    console.error("Failed to create anonymous chat log in database")
     throw error
   }
 }

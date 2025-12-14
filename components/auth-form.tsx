@@ -1,23 +1,23 @@
-'use client'
+"use client"
 
-import { useState, type FormEvent } from 'react'
-import { useSignIn, useSignUp } from '@/hooks/api/use-auth'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import Link from 'next/link'
+import Link from "next/link"
+import { type FormEvent, useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { useSignIn, useSignUp } from "@/hooks/api/use-auth"
 
 type Props = {
-  type: 'signin' | 'signup'
+  type: "signin" | "signup"
 }
 
 export function AuthForm(props: Props) {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
 
   const signInMutation = useSignIn()
   const signUpMutation = useSignUp()
 
-  const mutation = props.type === 'signin' ? signInMutation : signUpMutation
+  const mutation = props.type === "signin" ? signInMutation : signUpMutation
   const isPending = mutation.isPending
   const error = mutation.error
 
@@ -49,37 +49,35 @@ export function AuthForm(props: Props) {
           placeholder="Password"
           required
           className="w-full"
-          minLength={props.type === 'signup' ? 6 : 1}
+          minLength={props.type === "signup" ? 6 : 1}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
       </div>
 
-      {error && (
-        <div className="text-sm text-red-500">{error.message}</div>
-      )}
+      {error && <div className="text-red-500 text-sm">{error.message}</div>}
 
       <Button type="submit" className="w-full" disabled={isPending}>
         {isPending
-          ? props.type === 'signin'
-            ? 'Signing in...'
-            : 'Creating account...'
-          : props.type === 'signin'
-            ? 'Sign In'
-            : 'Create Account'}
+          ? props.type === "signin"
+            ? "Signing in..."
+            : "Creating account..."
+          : props.type === "signin"
+            ? "Sign In"
+            : "Create Account"}
       </Button>
 
-      <div className="text-center text-sm text-muted-foreground">
-        {props.type === 'signin' ? (
+      <div className="text-center text-muted-foreground text-sm">
+        {props.type === "signin" ? (
           <>
-            Don&apos;t have an account?{' '}
+            Don&apos;t have an account?{" "}
             <Link href="/register" className="text-primary hover:underline">
               Sign up
             </Link>
           </>
         ) : (
           <>
-            Already have an account?{' '}
+            Already have an account?{" "}
             <Link href="/login" className="text-primary hover:underline">
               Sign in
             </Link>

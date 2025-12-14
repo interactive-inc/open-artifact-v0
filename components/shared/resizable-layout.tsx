@@ -1,8 +1,9 @@
-'use client'
+"use client"
 
-import React, { useState, useRef, useCallback, useEffect } from 'react'
-import { cn } from '@/lib/utils'
-import { useIsMobile } from '@/hooks/use-mobile'
+import type React from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { cn } from "@/lib/utils"
 
 type ResizableLayoutProps = {
   leftPanel: React.ReactNode
@@ -12,7 +13,7 @@ type ResizableLayoutProps = {
   maxLeftWidth?: number
   className?: string
   singlePanelMode?: boolean
-  activePanel?: 'left' | 'right'
+  activePanel?: "left" | "right"
 }
 
 export function ResizableLayout(props: ResizableLayoutProps) {
@@ -20,7 +21,7 @@ export function ResizableLayout(props: ResizableLayoutProps) {
   const minLeftWidth = props.minLeftWidth ?? 20
   const maxLeftWidth = props.maxLeftWidth ?? 60
   const singlePanelMode = props.singlePanelMode ?? false
-  const activePanel = props.activePanel ?? 'left'
+  const activePanel = props.activePanel ?? "left"
   const [leftWidth, setLeftWidth] = useState(defaultLeftWidth)
   const [isDragging, setIsDragging] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -55,25 +56,28 @@ export function ResizableLayout(props: ResizableLayoutProps) {
 
   useEffect(() => {
     if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove)
-      document.addEventListener('mouseup', handleMouseUp)
-      document.body.style.cursor = 'col-resize'
-      document.body.style.userSelect = 'none'
+      document.addEventListener("mousemove", handleMouseMove)
+      document.addEventListener("mouseup", handleMouseUp)
+      document.body.style.cursor = "col-resize"
+      document.body.style.userSelect = "none"
 
       return () => {
-        document.removeEventListener('mousemove', handleMouseMove)
-        document.removeEventListener('mouseup', handleMouseUp)
-        document.body.style.cursor = ''
-        document.body.style.userSelect = ''
+        document.removeEventListener("mousemove", handleMouseMove)
+        document.removeEventListener("mouseup", handleMouseUp)
+        document.body.style.cursor = ""
+        document.body.style.userSelect = ""
       }
     }
   }, [isDragging, handleMouseMove, handleMouseUp])
 
   if (singlePanelMode) {
     return (
-      <div ref={containerRef} className={cn('flex flex-col h-full', props.className)}>
-        <div className="flex-1 flex flex-col min-h-0">
-          {activePanel === 'left' ? props.leftPanel : props.rightPanel}
+      <div
+        ref={containerRef}
+        className={cn("flex h-full flex-col", props.className)}
+      >
+        <div className="flex min-h-0 flex-1 flex-col">
+          {activePanel === "left" ? props.leftPanel : props.rightPanel}
         </div>
       </div>
     )
@@ -83,9 +87,9 @@ export function ResizableLayout(props: ResizableLayoutProps) {
   // On desktop, always render both to prevent iframe remounting
   if (isMobile) {
     return (
-      <div ref={containerRef} className={cn('flex h-full', props.className)}>
-        <div className="flex flex-col h-full w-full">
-          {activePanel === 'left' ? props.leftPanel : props.rightPanel}
+      <div ref={containerRef} className={cn("flex h-full", props.className)}>
+        <div className="flex h-full w-full flex-col">
+          {activePanel === "left" ? props.leftPanel : props.rightPanel}
         </div>
       </div>
     )
@@ -93,29 +97,29 @@ export function ResizableLayout(props: ResizableLayoutProps) {
 
   // Desktop: Always render both panels to prevent remounting on resize
   return (
-    <div ref={containerRef} className={cn('flex h-full', props.className)}>
+    <div ref={containerRef} className={cn("flex h-full", props.className)}>
       <div className="flex flex-col" style={{ width: `${leftWidth}%` }}>
         {props.leftPanel}
       </div>
 
       <div
         className={cn(
-          'w-px bg-border dark:bg-input cursor-col-resize transition-all relative group',
-          isDragging && 'bg-blue-500 dark:bg-blue-400',
+          "group relative w-px cursor-col-resize bg-border transition-all dark:bg-input",
+          isDragging && "bg-blue-500 dark:bg-blue-400",
         )}
         onMouseDown={handleMouseDown}
       >
         <div
           className={cn(
-            'absolute inset-y-0 left-1/2 -translate-x-1/2 w-0 bg-blue-500 dark:bg-blue-400 transition-all duration-200',
-            'group-hover:w-[3px]',
-            isDragging && 'w-[3px]',
+            "-translate-x-1/2 absolute inset-y-0 left-1/2 w-0 bg-blue-500 transition-all duration-200 dark:bg-blue-400",
+            "group-hover:w-[3px]",
+            isDragging && "w-[3px]",
           )}
         />
-        <div className="absolute inset-y-0 -left-2 -right-2" />
+        <div className="-left-2 -right-2 absolute inset-y-0" />
       </div>
 
-      <div className="flex-1 flex flex-col">{props.rightPanel}</div>
+      <div className="flex flex-1 flex-col">{props.rightPanel}</div>
     </div>
   )
 }

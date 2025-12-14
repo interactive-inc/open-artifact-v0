@@ -1,8 +1,8 @@
-import { drizzle, type PostgresJsDatabase } from 'drizzle-orm/postgres-js'
-import postgres from 'postgres'
-import * as schema from './schema'
+import { config } from "dotenv"
+import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js"
+import postgres from "postgres"
+import * as schema from "./schema"
 
-import { config } from 'dotenv'
 config()
 
 type DatabaseSchema = typeof schema
@@ -12,7 +12,7 @@ function createDatabase(): PostgresJsDatabase<DatabaseSchema> | null {
     return null
   }
 
-  console.log('🗄️  Using PostgreSQL database')
+  console.log("🗄️  Using PostgreSQL database")
   const client = postgres(process.env.POSTGRES_URL)
   return drizzle(client, { schema })
 }

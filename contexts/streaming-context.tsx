@@ -1,6 +1,6 @@
-'use client'
+"use client"
 
-import { createContext, useContext, useState, ReactNode } from 'react'
+import { createContext, type ReactNode, useContext, useState } from "react"
 
 type StreamingHandoff = {
   chatId: string | null
@@ -23,7 +23,7 @@ const StreamingContext = createContext<StreamingContextType | null>(null)
 export function useStreaming() {
   const context = useContext(StreamingContext)
   if (!context) {
-    throw new Error('useStreaming must be used within a StreamingProvider')
+    throw new Error("useStreaming must be used within a StreamingProvider")
   }
   return context
 }

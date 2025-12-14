@@ -1,0 +1,35 @@
+{
+  "$schema": "node_modules/@biomejs/biome/configuration_schema.json",
+  "css": {
+    "linter": {
+      "enabled": false
+    }
+  },
+  "files": {
+    "includes": [
+      "**",
+      "!**/components/ui/*",
+      "!**/hooks/use-mobile.ts",
+      "!.next"
+    ]
+  },
+  "formatter": {
+    "indentStyle": "space"
+  },
+  "javascript": {
+    "formatter": {
+      "semicolons": "asNeeded"
+    }
+  },
+  "linter": {
+    "rules": {
+      "correctness": {
+        "noUnusedImports": "error"
+      },
+      "nursery": {
+        "useSortedClasses": "error"
+      },
+      "recommended": true
+    }
+  }
+}

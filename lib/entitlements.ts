@@ -1,4 +1,4 @@
-import type { UserType } from '@/lib/supabase/types'
+import type { UserType } from "@/lib/supabase/types"
 
 type Entitlements = {
   maxMessagesPerDay: number

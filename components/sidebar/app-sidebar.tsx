@@ -1,11 +1,17 @@
-'use client'
+"use client"
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { MessageSquare, Plus, User, Github, LogOut } from 'lucide-react'
-import { useChats } from '@/hooks/api/use-chats'
-import { useSession } from '@/components/providers/session-provider'
-import { useSignOut } from '@/hooks/api/use-auth'
+import { Github, LogOut, MessageSquare, Plus, User } from "lucide-react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { useSession } from "@/components/providers/session-provider"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { VercelIcon } from "@/components/ui/icons"
 import {
   Sidebar,
   SidebarContent,
@@ -16,16 +22,10 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from '@/components/ui/sidebar'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { VercelIcon } from '@/components/ui/icons'
-import { DEPLOY_URL } from '@/lib/constants'
+} from "@/components/ui/sidebar"
+import { useSignOut } from "@/hooks/api/use-auth"
+import { useChats } from "@/hooks/api/use-chats"
+import { DEPLOY_URL } from "@/lib/constants"
 
 export function AppSidebar() {
   const pathname = usePathname()
@@ -47,8 +47,10 @@ export function AppSidebar() {
                     <User className="size-4" />
                   </div>
                   <div className="flex flex-col gap-0.5 leading-none">
-                    <span className="font-semibold truncate">{userEmail}</span>
-                    <span className="text-xs text-muted-foreground">v0 Clone</span>
+                    <span className="truncate font-semibold">{userEmail}</span>
+                    <span className="text-muted-foreground text-xs">
+                      v0 Clone
+                    </span>
                   </div>
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
@@ -62,7 +64,7 @@ export function AppSidebar() {
                   disabled={signOutMutation.isPending}
                 >
                   <LogOut className="mr-2 size-4" />
-                  {signOutMutation.isPending ? 'Signing out...' : 'Sign out'}
+                  {signOutMutation.isPending ? "Signing out..." : "Sign out"}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -75,7 +77,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={pathname === '/'}>
+                <SidebarMenuButton asChild isActive={pathname === "/"}>
                   <Link href="/">
                     <Plus className="size-4" />
                     <span>New Project</span>

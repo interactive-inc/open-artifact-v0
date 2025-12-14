@@ -1,7 +1,7 @@
-import { auth } from '@/lib/supabase/auth'
-import { AppSidebar } from '@/components/sidebar/app-sidebar'
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
-import { AuthRequired } from '@/components/auth/auth-required'
+import { AuthRequired } from "@/components/auth/auth-required"
+import { AppSidebar } from "@/components/sidebar/app-sidebar"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { auth } from "@/lib/supabase/auth"
 
 export default async function MainLayout({
   children,

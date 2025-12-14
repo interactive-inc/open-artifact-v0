@@ -1,24 +1,24 @@
-import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
-import './globals.css'
-import { StreamingProvider } from '@/contexts/streaming-context'
-import { QueryProvider } from '@/components/providers/query-provider'
-import { SessionProvider } from '@/components/providers/session-provider'
+import type { Metadata } from "next"
+import { Geist, Geist_Mono } from "next/font/google"
+import "./globals.css"
+import { QueryProvider } from "@/components/providers/query-provider"
+import { SessionProvider } from "@/components/providers/session-provider"
+import { StreamingProvider } from "@/contexts/streaming-context"
 
 const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
 })
 
 const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
 })
 
 export const metadata: Metadata = {
-  title: 'v0 Clone',
+  title: "v0 Clone",
   description:
-    'A clone of v0.dev built with the v0 SDK - Generate and preview React components with AI',
+    "A clone of v0.dev built with the v0 SDK - Generate and preview React components with AI",
 }
 
 export default function RootLayout({
@@ -53,7 +53,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased h-full overflow-hidden`}
+        className={`${geistSans.variable} ${geistMono.variable} h-full overflow-hidden antialiased`}
       >
         <SessionProvider>
           <QueryProvider>

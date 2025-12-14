@@ -1,16 +1,6 @@
-'use client'
+"use client"
 
-import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import { cn } from '@/lib/utils'
-import type { ChatStatus } from 'ai'
+import type { ChatStatus } from "ai"
 import {
   ArrowUpIcon,
   ImageIcon,
@@ -19,13 +9,23 @@ import {
   MicOffIcon,
   SquareIcon,
   XIcon,
-} from 'lucide-react'
+} from "lucide-react"
 import type {
   ComponentProps,
   HTMLAttributes,
   KeyboardEventHandler,
-} from 'react'
-import { Children, useCallback, useEffect, useRef, useState } from 'react'
+} from "react"
+import { Children, useCallback, useEffect, useRef, useState } from "react"
+import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { cn } from "@/lib/utils"
 
 // Utility function to convert file to data URL
 export const fileToDataUrl = (file: File): Promise<string> => {
@@ -51,7 +51,7 @@ export const createImageAttachment = async (
 }
 
 // SessionStorage utilities for prompt persistence
-const PROMPT_STORAGE_KEY = 'v0-prompt-data'
+const PROMPT_STORAGE_KEY = "v0-prompt-data"
 
 export type StoredPromptData = {
   message: string
@@ -79,7 +79,7 @@ export const savePromptToStorage = (
     }
     sessionStorage.setItem(PROMPT_STORAGE_KEY, JSON.stringify(data))
   } catch (error) {
-    console.warn('Failed to save prompt to sessionStorage:', error)
+    console.warn("Failed to save prompt to sessionStorage:", error)
   }
 }
 
@@ -90,7 +90,7 @@ export const loadPromptFromStorage = (): StoredPromptData | null => {
       return JSON.parse(stored)
     }
   } catch (error) {
-    console.warn('Failed to load prompt from sessionStorage:', error)
+    console.warn("Failed to load prompt from sessionStorage:", error)
   }
   return null
 }
@@ -99,15 +99,15 @@ export const clearPromptFromStorage = () => {
   try {
     sessionStorage.removeItem(PROMPT_STORAGE_KEY)
   } catch (error) {
-    console.warn('Failed to clear prompt from sessionStorage:', error)
+    console.warn("Failed to clear prompt from sessionStorage:", error)
   }
 }
 
 export const createImageAttachmentFromStored = (
-  stored: StoredPromptData['attachments'][0],
+  stored: StoredPromptData["attachments"][0],
 ): ImageAttachment => {
   // Create a mock File object from stored data
-  const mockFile = new File([''], stored.fileName, { type: 'image/*' })
+  const mockFile = new File([""], stored.fileName, { type: "image/*" })
   return {
     id: stored.id,
     file: mockFile,
@@ -154,7 +154,7 @@ export const PromptInput = ({
       e.stopPropagation()
 
       const files = Array.from(e.dataTransfer.files).filter((file) =>
-        file.type.startsWith('image/'),
+        file.type.startsWith("image/"),
       )
 
       if (files.length > 0) {
@@ -169,8 +169,8 @@ export const PromptInput = ({
   return (
     <form
       className={cn(
-        'w-full divide-y overflow-hidden rounded-xl border bg-background shadow-sm transition-colors',
-        isDragOver && 'border-primary bg-primary/5',
+        "w-full divide-y overflow-hidden rounded-xl border bg-background shadow-sm transition-colors",
+        isDragOver && "border-primary bg-primary/5",
         className,
       )}
       onDragOver={handleDragOver}
@@ -189,13 +189,13 @@ export type PromptInputTextareaProps = ComponentProps<typeof Textarea> & {
 export const PromptInputTextarea = ({
   onChange,
   className,
-  placeholder = 'What would you like to know?',
+  placeholder = "What would you like to know?",
   minHeight = 48,
   maxHeight = 164,
   ...props
 }: PromptInputTextareaProps) => {
   const handleKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       // Don't submit if IME composition is in progress
       if (e.nativeEvent.isComposing) {
         return
@@ -218,9 +218,9 @@ export const PromptInputTextarea = ({
   return (
     <Textarea
       className={cn(
-        'w-full resize-none rounded-none border-none p-3 shadow-none outline-none ring-0',
-        'field-sizing-content max-h-[6lh] bg-transparent dark:bg-transparent',
-        'focus-visible:ring-0',
+        "w-full resize-none rounded-none border-none p-3 shadow-none outline-none ring-0",
+        "field-sizing-content max-h-[6lh] bg-transparent dark:bg-transparent",
+        "focus-visible:ring-0",
         className,
       )}
       name="message"
@@ -241,7 +241,7 @@ export const PromptInputToolbar = ({
   ...props
 }: PromptInputToolbarProps) => (
   <div
-    className={cn('flex items-center justify-between p-1', className)}
+    className={cn("flex items-center justify-between p-1", className)}
     {...props}
   />
 )
@@ -254,8 +254,8 @@ export const PromptInputTools = ({
 }: PromptInputToolsProps) => (
   <div
     className={cn(
-      'flex items-center gap-1',
-      '[&_button:first-child]:rounded-bl-xl',
+      "flex items-center gap-1",
+      "[&_button:first-child]:rounded-bl-xl",
       className,
     )}
     {...props}
@@ -265,20 +265,20 @@ export const PromptInputTools = ({
 export type PromptInputButtonProps = ComponentProps<typeof Button>
 
 export const PromptInputButton = ({
-  variant = 'ghost',
+  variant = "ghost",
   className,
   size,
   ...props
 }: PromptInputButtonProps) => {
   const newSize =
-    (size ?? Children.count(props.children) > 1) ? 'default' : 'icon'
+    (size ?? Children.count(props.children) > 1) ? "default" : "icon"
 
   return (
     <Button
       className={cn(
-        'shrink-0 gap-1.5 rounded-lg',
-        variant === 'ghost' && 'text-muted-foreground',
-        newSize === 'default' && 'px-3',
+        "shrink-0 gap-1.5 rounded-lg",
+        variant === "ghost" && "text-muted-foreground",
+        newSize === "default" && "px-3",
         className,
       )}
       size={newSize}
@@ -295,25 +295,25 @@ export type PromptInputSubmitProps = ComponentProps<typeof Button> & {
 
 export const PromptInputSubmit = ({
   className,
-  variant = 'default',
-  size = 'icon',
+  variant = "default",
+  size = "icon",
   status,
   children,
   ...props
 }: PromptInputSubmitProps) => {
   let Icon = <ArrowUpIcon className="size-4" />
 
-  if (status === 'submitted') {
+  if (status === "submitted") {
     Icon = <Loader2Icon className="size-4 animate-spin" />
-  } else if (status === 'streaming') {
+  } else if (status === "streaming") {
     Icon = <SquareIcon className="size-4" />
-  } else if (status === 'error') {
+  } else if (status === "error") {
     Icon = <XIcon className="size-4" />
   }
 
   return (
     <Button
-      className={cn('gap-1.5 rounded-lg', className)}
+      className={cn("gap-1.5 rounded-lg", className)}
       size={size}
       type="submit"
       variant={variant}
@@ -340,7 +340,7 @@ export const PromptInputModelSelectTrigger = ({
 }: PromptInputModelSelectTriggerProps) => (
   <SelectTrigger
     className={cn(
-      'border-none bg-transparent font-medium text-muted-foreground shadow-none transition-colors',
+      "border-none bg-transparent font-medium text-muted-foreground shadow-none transition-colors",
       'hover:bg-accent hover:text-foreground [&[aria-expanded="true"]]:bg-accent [&[aria-expanded="true"]]:text-foreground',
       className,
     )}
@@ -404,7 +404,7 @@ export const PromptInputMicButton = ({
       const recognition = new SpeechRecognition()
       recognition.continuous = false
       recognition.interimResults = false
-      recognition.lang = 'en-US'
+      recognition.lang = "en-US"
 
       recognition.onstart = () => {
         if (!isCleaningUpRef.current) {
@@ -422,8 +422,8 @@ export const PromptInputMicButton = ({
 
       recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
         // Don't report "aborted" errors as they're usually from cleanup or natural timeout
-        if (event.error !== 'aborted' && !isCleaningUpRef.current) {
-          console.error('Speech recognition error:', event.error)
+        if (event.error !== "aborted" && !isCleaningUpRef.current) {
+          console.error("Speech recognition error:", event.error)
           onError?.(event.error)
         }
         setIsListening(false)
@@ -443,7 +443,7 @@ export const PromptInputMicButton = ({
       if (recognitionRef.current) {
         try {
           recognitionRef.current.abort()
-        } catch (error) {
+        } catch (_error) {
           // Ignore errors during cleanup
         }
       }
@@ -457,15 +457,15 @@ export const PromptInputMicButton = ({
       try {
         recognitionRef.current.stop()
       } catch (error) {
-        console.warn('Error stopping speech recognition:', error)
+        console.warn("Error stopping speech recognition:", error)
         setIsListening(false)
       }
     } else {
       try {
         recognitionRef.current.start()
       } catch (error) {
-        console.error('Error starting speech recognition:', error)
-        onError?.('Failed to start speech recognition')
+        console.error("Error starting speech recognition:", error)
+        onError?.("Failed to start speech recognition")
       }
     }
   }, [isListening, onError])
@@ -477,9 +477,9 @@ export const PromptInputMicButton = ({
   return (
     <PromptInputButton
       className={cn(
-        'transition-colors',
+        "transition-colors",
         isListening &&
-          'bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30',
+          "bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30",
         className,
       )}
       onClick={toggleListening}
@@ -512,7 +512,7 @@ export const PromptInputImageButton = ({
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files || []).filter((file) =>
-        file.type.startsWith('image/'),
+        file.type.startsWith("image/"),
       )
 
       if (files.length > 0) {
@@ -521,7 +521,7 @@ export const PromptInputImageButton = ({
 
       // Reset the input so the same file can be selected again
       if (e.target) {
-        e.target.value = ''
+        e.target.value = ""
       }
     },
     [onImageSelect],
@@ -569,27 +569,27 @@ export const PromptInputImagePreview = ({
   if (attachments.length === 0) return null
 
   return (
-    <div className={cn('flex flex-wrap gap-2 p-2', className)}>
+    <div className={cn("flex flex-wrap gap-2 p-2", className)}>
       {attachments.map((attachment) => (
         <div
           key={attachment.id}
-          className="relative group rounded-lg overflow-hidden border bg-muted"
+          className="group relative overflow-hidden rounded-lg border bg-muted"
         >
           <img
             src={attachment.preview}
             alt={attachment.file.name}
-            className="w-16 h-16 object-cover"
+            className="h-16 w-16 object-cover"
           />
           {onRemove && (
             <button
               onClick={() => onRemove(attachment.id)}
-              className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              className="-top-1 -right-1 absolute flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground opacity-0 transition-opacity group-hover:opacity-100"
               type="button"
             >
               <XIcon className="size-3" />
             </button>
           )}
-          <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 truncate">
+          <div className="absolute right-0 bottom-0 left-0 truncate bg-black/50 p-1 text-white text-xs">
             {attachment.file.name}
           </div>
         </div>

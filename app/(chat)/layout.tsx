@@ -1,5 +1,5 @@
-import { auth } from '@/lib/supabase/auth'
-import { AuthRequired } from '@/components/auth/auth-required'
+import { AuthRequired } from "@/components/auth/auth-required"
+import { auth } from "@/lib/supabase/auth"
 
 export default async function ChatLayout({
   children,

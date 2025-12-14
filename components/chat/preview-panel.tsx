@@ -1,12 +1,12 @@
+import { Circle, Maximize, Minimize, RefreshCw } from "lucide-react"
 import {
   WebPreview,
   WebPreviewBody,
-} from '@/components/ai-elements/web-preview'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { RefreshCw, Maximize, Minimize, Circle } from 'lucide-react'
-import { cn } from '@/lib/utils'
+} from "@/components/ai-elements/web-preview"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { cn } from "@/lib/utils"
 
 type Chat = {
   id: string
@@ -26,12 +26,12 @@ export function PreviewPanel(props: Props) {
   return (
     <div
       className={cn(
-        'flex flex-col h-full transition-all duration-300',
-        props.isFullscreen ? 'fixed inset-0 z-50 bg-background p-0' : 'p-2',
+        "flex h-full flex-col transition-all duration-300",
+        props.isFullscreen ? "fixed inset-0 z-50 bg-background p-0" : "p-2",
       )}
     >
-      <Card className="p-0 gap-0 flex flex-col h-full overflow-hidden">
-        <div className="flex items-center gap-2 px-3 py-2 border-b bg-muted/50">
+      <Card className="flex h-full flex-col gap-0 overflow-hidden p-0">
+        <div className="flex items-center gap-2 border-b bg-muted/50 px-3 py-2">
           <div className="flex items-center gap-1.5">
             <Circle className="size-3 fill-red-500 text-red-500" />
             <Circle className="size-3 fill-yellow-500 text-yellow-500" />
@@ -40,8 +40,8 @@ export function PreviewPanel(props: Props) {
           <Input
             readOnly
             placeholder="Your app will appear here..."
-            value={props.currentChat?.demo || ''}
-            className="flex-1 h-7 text-xs bg-background"
+            value={props.currentChat?.demo || ""}
+            className="h-7 flex-1 bg-background text-xs"
           />
           <Button
             variant="ghost"
@@ -66,18 +66,22 @@ export function PreviewPanel(props: Props) {
             )}
           </Button>
         </div>
-        <div className="flex-1 min-h-0">
+        <div className="min-h-0 flex-1">
           {props.currentChat?.demo ? (
             <WebPreview defaultUrl={props.currentChat.demo}>
-              <WebPreviewBody key={props.refreshKey} src={props.currentChat.demo} className="h-full" />
+              <WebPreviewBody
+                key={props.refreshKey}
+                src={props.currentChat.demo}
+                className="h-full"
+              />
             </WebPreview>
           ) : (
-            <div className="h-full flex items-center justify-center bg-muted/30">
+            <div className="flex h-full items-center justify-center bg-muted/30">
               <div className="text-center">
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="font-medium text-muted-foreground text-sm">
                   No preview available
                 </p>
-                <p className="text-xs text-muted-foreground/70">
+                <p className="text-muted-foreground/70 text-xs">
                   Start a conversation to see your app here
                 </p>
               </div>

@@ -1,15 +1,8 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { MoreHorizontal, Copy, Trash2, ExternalLink } from 'lucide-react'
-import { useDeleteChat, useForkChat } from '@/hooks/api/use-chats'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { Copy, ExternalLink, MoreHorizontal, Trash2 } from "lucide-react"
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -17,8 +10,15 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { useDeleteChat, useForkChat } from "@/hooks/api/use-chats"
 
 type Props = {
   chatId: string
@@ -112,7 +112,7 @@ export function ChatMenu({ chatId }: Props) {
               Cancel
             </Button>
             <Button onClick={handleDuplicateChat} disabled={isLoading}>
-              {isLoading ? 'Duplicating...' : 'Duplicate Chat'}
+              {isLoading ? "Duplicating..." : "Duplicate Chat"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -141,7 +141,7 @@ export function ChatMenu({ chatId }: Props) {
               onClick={handleDeleteChat}
               disabled={isLoading}
             >
-              {isLoading ? 'Deleting...' : 'Delete Chat'}
+              {isLoading ? "Deleting..." : "Delete Chat"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,6 +1,6 @@
-import type { User } from '@supabase/supabase-js'
+import type { User } from "@supabase/supabase-js"
 
-export type UserType = 'guest' | 'regular'
+export type UserType = "guest" | "regular"
 
 export type SupabaseUser = User & {
   userType: UserType
@@ -11,10 +11,10 @@ export type SupabaseUser = User & {
  */
 export function getUserType(email: string | undefined): UserType {
   if (!email) {
-    return 'guest'
+    return "guest"
   }
-  if (email.startsWith('guest-')) {
-    return 'guest'
+  if (email.startsWith("guest-")) {
+    return "guest"
   }
-  return 'regular'
+  return "regular"
 }

@@ -80,12 +80,8 @@
           "name": "chat_ownerships_user_id_users_id_fk",
           "tableFrom": "chat_ownerships",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -95,9 +91,7 @@
         "chat_ownerships_v0_chat_id_unique": {
           "name": "chat_ownerships_v0_chat_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "v0_chat_id"
-          ]
+          "columns": ["v0_chat_id"]
         }
       },
       "policies": {},

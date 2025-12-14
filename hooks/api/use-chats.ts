@@ -1,14 +1,14 @@
-'use client'
+"use client"
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useRouter } from 'next/navigation'
-import { client } from '@/lib/api/client'
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useRouter } from "next/navigation"
+import { client } from "@/lib/api/client"
 
 export const chatKeys = {
-  all: ['chats'] as const,
-  lists: () => [...chatKeys.all, 'list'] as const,
+  all: ["chats"] as const,
+  lists: () => [...chatKeys.all, "list"] as const,
   list: () => [...chatKeys.lists()] as const,
-  details: () => [...chatKeys.all, 'detail'] as const,
+  details: () => [...chatKeys.all, "detail"] as const,
   detail: (id: string) => [...chatKeys.details(), id] as const,
 }
 
@@ -19,12 +19,12 @@ export function useChats() {
       const response = await client.api.chats.$get()
 
       if (!response.ok) {
-        throw new Error('Failed to fetch chats')
+        throw new Error("Failed to fetch chats")
       }
 
       const result = await response.json()
 
-      if ('data' in result) {
+      if ("data" in result) {
         return result.data
       }
 
@@ -35,14 +35,14 @@ export function useChats() {
 
 export function useChat(id: string | null) {
   return useQuery({
-    queryKey: chatKeys.detail(id || ''),
+    queryKey: chatKeys.detail(id || ""),
     queryFn: async () => {
-      const response = await client.api.chats[':id'].$get({
+      const response = await client.api.chats[":id"].$get({
         param: { id: id! },
       })
 
       if (!response.ok) {
-        throw new Error('Failed to fetch chat')
+        throw new Error("Failed to fetch chat")
       }
 
       return response.json()
@@ -57,12 +57,12 @@ export function useDeleteChat() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const response = await client.api.chats[':id'].$delete({
+      const response = await client.api.chats[":id"].$delete({
         param: { id },
       })
 
       if (!response.ok) {
-        throw new Error('Failed to delete chat')
+        throw new Error("Failed to delete chat")
       }
 
       return response.json()
@@ -70,7 +70,7 @@ export function useDeleteChat() {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: chatKeys.lists() })
       queryClient.removeQueries({ queryKey: chatKeys.detail(id) })
-      router.push('/')
+      router.push("/")
     },
   })
 }
@@ -81,19 +81,19 @@ export function useForkChat() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const response = await client.api.chats[':id'].fork.$post({
+      const response = await client.api.chats[":id"].fork.$post({
         param: { id },
       })
 
       if (!response.ok) {
-        throw new Error('Failed to fork chat')
+        throw new Error("Failed to fork chat")
       }
 
       return response.json()
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: chatKeys.lists() })
-      if ('id' in result && result.id) {
+      if ("id" in result && result.id) {
         router.push(`/chats/${result.id}`)
       }
     },
@@ -104,14 +104,20 @@ export function useUpdateVisibility() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id, privacy }: { id: string; privacy: 'public' | 'private' | 'team' | 'team-edit' | 'unlisted' }) => {
-      const response = await client.api.chats[':id'].visibility.$patch({
+    mutationFn: async ({
+      id,
+      privacy,
+    }: {
+      id: string
+      privacy: "public" | "private" | "team" | "team-edit" | "unlisted"
+    }) => {
+      const response = await client.api.chats[":id"].visibility.$patch({
         param: { id },
         json: { privacy },
       })
 
       if (!response.ok) {
-        throw new Error('Failed to update visibility')
+        throw new Error("Failed to update visibility")
       }
 
       return response.json()
@@ -131,7 +137,7 @@ export function useCreateOwnership() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to create ownership')
+        throw new Error("Failed to create ownership")
       }
 
       return response.json()

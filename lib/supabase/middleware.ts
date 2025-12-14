@@ -1,21 +1,25 @@
-import { createServerClient, type CookieMethodsServer } from '@supabase/ssr'
-import { NextResponse, type NextRequest } from 'next/server'
+import { type CookieMethodsServer, createServerClient } from "@supabase/ssr"
+import { type NextRequest, NextResponse } from "next/server"
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
-const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || 'placeholder-key'
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co"
+const supabasePublishableKey =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "placeholder-key"
 
 type ResponseHolder = {
   response: NextResponse
 }
 
-function normalizeSameSite(value: boolean | 'lax' | 'strict' | 'none' | undefined): 'lax' | 'strict' | 'none' | undefined {
+function normalizeSameSite(
+  value: boolean | "lax" | "strict" | "none" | undefined,
+): "lax" | "strict" | "none" | undefined {
   if (value === undefined || value === false) {
     return undefined
   }
   if (value === true) {
-    return 'strict'
+    return "strict"
   }
-  if (value === 'strict' || value === 'lax' || value === 'none') {
+  if (value === "strict" || value === "lax" || value === "none") {
     return value
   }
   return undefined
@@ -59,5 +63,8 @@ export async function updateSession(request: NextRequest) {
 
   const userResponse = await supabase.auth.getUser()
 
-  return { supabaseResponse: responseHolder.response, user: userResponse.data.user }
+  return {
+    supabaseResponse: responseHolder.response,
+    user: userResponse.data.user,
+  }
 }

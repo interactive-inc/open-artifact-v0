@@ -1,20 +1,20 @@
-'use client'
+"use client"
 
-import { useState, useEffect, useRef } from 'react'
-import { useParams } from 'next/navigation'
-import { ChatHeader } from '@/components/chat/chat-header'
-import { ChatMessages } from '@/components/chat/chat-messages'
-import { ChatInput } from '@/components/chat/chat-input'
-import { PreviewPanel } from '@/components/chat/preview-panel'
-import { ResizableLayout } from '@/components/shared/resizable-layout'
-import { BottomToolbar } from '@/components/shared/bottom-toolbar'
-import { useChat } from '@/hooks/use-chat'
-import { useStreaming } from '@/contexts/streaming-context'
-import { cn } from '@/lib/utils'
+import { useParams } from "next/navigation"
+import { useEffect, useRef, useState } from "react"
 import {
-  type ImageAttachment,
   clearPromptFromStorage,
-} from '@/components/ai-elements/prompt-input'
+  type ImageAttachment,
+} from "@/components/ai-elements/prompt-input"
+import { ChatHeader } from "@/components/chat/chat-header"
+import { ChatInput } from "@/components/chat/chat-input"
+import { ChatMessages } from "@/components/chat/chat-messages"
+import { PreviewPanel } from "@/components/chat/preview-panel"
+import { BottomToolbar } from "@/components/shared/bottom-toolbar"
+import { ResizableLayout } from "@/components/shared/resizable-layout"
+import { useStreaming } from "@/contexts/streaming-context"
+import { useChat } from "@/hooks/use-chat"
+import { cn } from "@/lib/utils"
 
 export function ChatDetailClient() {
   const params = useParams()
@@ -22,10 +22,10 @@ export function ChatDetailClient() {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
   const [attachments, setAttachments] = useState<ImageAttachment[]>([])
-  const [activePanel, setActivePanel] = useState<'chat' | 'preview'>('chat')
+  const [activePanel, setActivePanel] = useState<"chat" | "preview">("chat")
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  const streamingContext = useStreaming()
+  const _streamingContext = useStreaming()
   const chatState = useChat(chatId)
 
   const handleSubmitWithAttachments = (
@@ -40,13 +40,13 @@ export function ChatDetailClient() {
   // Handle fullscreen keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isFullscreen) {
+      if (event.key === "Escape" && isFullscreen) {
         setIsFullscreen(false)
       }
     }
 
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
+    document.addEventListener("keydown", handleKeyDown)
+    return () => document.removeEventListener("keydown", handleKeyDown)
   }, [isFullscreen])
 
   useEffect(() => {
@@ -58,18 +58,18 @@ export function ChatDetailClient() {
   return (
     <div
       className={cn(
-        'h-full bg-gray-50 dark:bg-black flex flex-col overflow-hidden',
-        isFullscreen && 'fixed inset-0 z-50',
+        "flex h-full flex-col overflow-hidden bg-gray-50 dark:bg-black",
+        isFullscreen && "fixed inset-0 z-50",
       )}
     >
       <ResizableLayout
-        className="flex-1 min-h-0"
+        className="min-h-0 flex-1"
         singlePanelMode={false}
-        activePanel={activePanel === 'chat' ? 'left' : 'right'}
+        activePanel={activePanel === "chat" ? "left" : "right"}
         leftPanel={
-          <div className="flex flex-col h-full">
+          <div className="flex h-full flex-col">
             <ChatHeader />
-            <div className="flex-1 min-h-0 overflow-y-auto">
+            <div className="min-h-0 flex-1 overflow-y-auto">
               <ChatMessages
                 chatHistory={chatState.chatHistory}
                 isLoading={chatState.isLoading}
@@ -104,7 +104,7 @@ export function ChatDetailClient() {
         }
       />
 
-      <div className="md:hidden flex-shrink-0">
+      <div className="flex-shrink-0 md:hidden">
         <BottomToolbar
           activePanel={activePanel}
           onPanelChange={setActivePanel}

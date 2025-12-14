@@ -1,9 +1,9 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { Copy, Check } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import type { MissingEnvVar } from '@/lib/env-check'
+import { Check, Copy } from "lucide-react"
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import type { MissingEnvVar } from "@/lib/env-check"
 
 type EnvSetupProps = {
   missingVars: MissingEnvVar[]
@@ -19,7 +19,7 @@ export function EnvSetup(props: EnvSetupProps) {
       }
       return `${envVar.name}=`
     })
-    .join('\n')
+    .join("\n")
 
   const copyToClipboard = async () => {
     try {
@@ -27,52 +27,52 @@ export function EnvSetup(props: EnvSetupProps) {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch (error) {
-      console.error('Failed to copy to clipboard:', error)
+      console.error("Failed to copy to clipboard:", error)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black flex flex-col">
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+    <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-black">
+      <div className="flex flex-1 items-center justify-center px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md">
+          <div className="mb-8 text-center">
+            <h2 className="mb-4 font-bold text-3xl text-gray-900 dark:text-white">
               Setup Required
             </h2>
             <p className="text-gray-600 dark:text-gray-400">
-              Add these environment variables to your{' '}
-              <code className="bg-gray-200 dark:bg-gray-800 px-1 rounded">
+              Add these environment variables to your{" "}
+              <code className="rounded bg-gray-200 px-1 dark:bg-gray-800">
                 .env
-              </code>{' '}
+              </code>{" "}
               file:
             </p>
           </div>
 
-          <div className="bg-[oklch(0.922_0_0)] dark:bg-[oklch(1_0_0_/_15%)] rounded-lg p-6 mb-6">
-            <pre className="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap break-all">
+          <div className="mb-6 rounded-lg bg-[oklch(0.922_0_0)] p-6 dark:bg-[oklch(1_0_0_/_15%)]">
+            <pre className="whitespace-pre-wrap break-all text-gray-900 text-sm dark:text-gray-100">
               {envFileContent}
             </pre>
           </div>
 
-          <div className="text-center space-y-4">
+          <div className="space-y-4 text-center">
             <Button
               onClick={copyToClipboard}
-              className="w-full flex items-center justify-center gap-2"
+              className="flex w-full items-center justify-center gap-2"
             >
               {copied ? (
                 <>
-                  <Check className="w-4 h-4" />
+                  <Check className="h-4 w-4" />
                   Copied!
                 </>
               ) : (
                 <>
-                  <Copy className="w-4 h-4" />
+                  <Copy className="h-4 w-4" />
                   Copy to Clipboard
                 </>
               )}
             </Button>
 
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-gray-500 text-sm dark:text-gray-400">
               After adding the variables, restart your server
             </p>
           </div>

@@ -1,10 +1,15 @@
-'use client'
+"use client"
 
-import { useState, useEffect, useRef, Suspense, useCallback } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
-import type { MessageBinaryFormat } from '@v0-sdk/react'
+import type { MessageBinaryFormat } from "@v0-sdk/react"
+import Link from "next/link"
+import { useRouter, useSearchParams } from "next/navigation"
+import { Suspense, useCallback, useEffect, useRef, useState } from "react"
 import {
+  clearPromptFromStorage,
+  createImageAttachment,
+  createImageAttachmentFromStored,
+  type ImageAttachment,
+  loadPromptFromStorage,
   PromptInput,
   PromptInputImageButton,
   PromptInputImagePreview,
@@ -13,33 +18,28 @@ import {
   PromptInputTextarea,
   PromptInputToolbar,
   PromptInputTools,
-  createImageAttachment,
-  createImageAttachmentFromStored,
   savePromptToStorage,
-  loadPromptFromStorage,
-  clearPromptFromStorage,
-  type ImageAttachment,
-} from '@/components/ai-elements/prompt-input'
-import { Suggestions, Suggestion } from '@/components/ai-elements/suggestion'
-import { ChatHeader } from '@/components/chat/chat-header'
-import { ChatMessages } from '@/components/chat/chat-messages'
-import { ChatInput } from '@/components/chat/chat-input'
-import { PreviewPanel } from '@/components/chat/preview-panel'
-import { ResizableLayout } from '@/components/shared/resizable-layout'
-import { BottomToolbar } from '@/components/shared/bottom-toolbar'
-import { client } from '@/lib/api/client'
+} from "@/components/ai-elements/prompt-input"
+import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion"
+import { ChatHeader } from "@/components/chat/chat-header"
+import { ChatInput } from "@/components/chat/chat-input"
+import { ChatMessages } from "@/components/chat/chat-messages"
+import { PreviewPanel } from "@/components/chat/preview-panel"
+import { BottomToolbar } from "@/components/shared/bottom-toolbar"
+import { ResizableLayout } from "@/components/shared/resizable-layout"
+import { client } from "@/lib/api/client"
 
 function SearchParamsHandler({ onReset }: { onReset: () => void }) {
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    const reset = searchParams.get('reset')
-    if (reset === 'true') {
+    const reset = searchParams.get("reset")
+    if (reset === "true") {
       onReset()
 
       const newUrl = new URL(window.location.href)
-      newUrl.searchParams.delete('reset')
-      window.history.replaceState({}, '', newUrl.pathname)
+      newUrl.searchParams.delete("reset")
+      window.history.replaceState({}, "", newUrl.pathname)
     }
   }, [searchParams, onReset])
 
@@ -47,14 +47,14 @@ function SearchParamsHandler({ onReset }: { onReset: () => void }) {
 }
 
 export function HomeClient() {
-  const [message, setMessage] = useState('')
+  const [message, setMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [showChatInterface, setShowChatInterface] = useState(false)
   const [attachments, setAttachments] = useState<ImageAttachment[]>([])
   const [isDragOver, setIsDragOver] = useState(false)
   const [chatHistory, setChatHistory] = useState<
     Array<{
-      type: 'user' | 'assistant'
+      type: "user" | "assistant"
       content: string | MessageBinaryFormat
       isStreaming?: boolean
       stream?: ReadableStream<Uint8Array> | null
@@ -67,9 +67,9 @@ export function HomeClient() {
   } | null>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
-  const [activePanel, setActivePanel] = useState<'chat' | 'preview'>('chat')
+  const [activePanel, setActivePanel] = useState<"chat" | "preview">("chat")
   const [isStreaming, setIsStreaming] = useState(false)
-  const router = useRouter()
+  const _router = useRouter()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const handleReset = useCallback(() => {
@@ -77,7 +77,7 @@ export function HomeClient() {
     setChatHistory([])
     setCurrentChatId(null)
     setCurrentChat(null)
-    setMessage('')
+    setMessage("")
     setAttachments([])
     setIsLoading(false)
     setIsStreaming(false)
@@ -125,7 +125,7 @@ export function HomeClient() {
       )
       setAttachments((prev) => [...prev, ...newAttachments])
     } catch (error) {
-      console.error('Error processing image files:', error)
+      console.error("Error processing image files:", error)
     }
   }
 
@@ -154,13 +154,13 @@ export function HomeClient() {
 
     clearPromptFromStorage()
 
-    setMessage('')
+    setMessage("")
     setAttachments([])
 
     setShowChatInterface(true)
     setChatHistory([
       {
-        type: 'user',
+        type: "user",
         content: userMessage,
       },
     ])
@@ -177,27 +177,27 @@ export function HomeClient() {
 
       if (!response.ok) {
         let errorMessage =
-          'Sorry, there was an error processing your message. Please try again.'
+          "Sorry, there was an error processing your message. Please try again."
         try {
-          const errorData = await response.json() as Record<string, unknown>
-          if ('message' in errorData && typeof errorData.message === 'string') {
+          const errorData = (await response.json()) as Record<string, unknown>
+          if ("message" in errorData && typeof errorData.message === "string") {
             errorMessage = errorData.message
           } else if (response.status === 429) {
             errorMessage =
-              'You have exceeded your maximum number of messages for the day. Please try again later.'
+              "You have exceeded your maximum number of messages for the day. Please try again later."
           }
         } catch (parseError) {
-          console.error('Error parsing error response:', parseError)
+          console.error("Error parsing error response:", parseError)
           if (response.status === 429) {
             errorMessage =
-              'You have exceeded your maximum number of messages for the day. Please try again later.'
+              "You have exceeded your maximum number of messages for the day. Please try again later."
           }
         }
         throw new Error(errorMessage)
       }
 
       if (!response.body) {
-        throw new Error('No response body for streaming')
+        throw new Error("No response body for streaming")
       }
 
       setIsLoading(false)
@@ -206,26 +206,26 @@ export function HomeClient() {
       setChatHistory((prev) => [
         ...prev,
         {
-          type: 'assistant',
+          type: "assistant",
           content: [],
           isStreaming: true,
           stream: response.body,
         },
       ])
     } catch (error) {
-      console.error('Error creating chat:', error)
+      console.error("Error creating chat:", error)
       setIsLoading(false)
       setIsStreaming(false)
 
       const errorMessage =
         error instanceof Error
           ? error.message
-          : 'Sorry, there was an error processing your message. Please try again.'
+          : "Sorry, there was an error processing your message. Please try again."
 
       setChatHistory((prev) => [
         ...prev,
         {
-          type: 'assistant',
+          type: "assistant",
           content: errorMessage,
         },
       ])
@@ -235,11 +235,11 @@ export function HomeClient() {
   const handleChatData = async (chatData: unknown) => {
     const data = chatData as { id?: string; object?: string }
     if (data.id) {
-      if (!currentChatId || data.object === 'chat') {
+      if (!currentChatId || data.object === "chat") {
         setCurrentChatId(data.id)
         setCurrentChat({ id: data.id })
 
-        window.history.pushState(null, '', `/chats/${data.id}`)
+        window.history.pushState(null, "", `/chats/${data.id}`)
       }
 
       if (!currentChatId) {
@@ -248,7 +248,7 @@ export function HomeClient() {
             json: { chatId: data.id },
           })
         } catch (error) {
-          console.error('Failed to create chat ownership:', error)
+          console.error("Failed to create chat ownership:", error)
         }
       }
     }
@@ -274,19 +274,23 @@ export function HomeClient() {
 
     setCurrentChat((prevCurrentChat) => {
       if (prevCurrentChat?.id) {
-        client.api.chats[':id'].$get({
-          param: { id: prevCurrentChat.id },
-        })
+        client.api.chats[":id"]
+          .$get({
+            param: { id: prevCurrentChat.id },
+          })
           .then((response) => {
             if (response.ok) {
               return response.json()
             }
-            console.warn('Failed to fetch chat details:', response.status)
+            console.warn("Failed to fetch chat details:", response.status)
             return null
           })
           .then((chatDetails) => {
-            if (chatDetails && !('error' in chatDetails)) {
-              const details = chatDetails as { latestVersion?: { demoUrl?: string }; demo?: string }
+            if (chatDetails && !("error" in chatDetails)) {
+              const details = chatDetails as {
+                latestVersion?: { demoUrl?: string }
+                demo?: string
+              }
               const demoUrl = details.latestVersion?.demoUrl || details.demo
 
               if (demoUrl) {
@@ -294,13 +298,13 @@ export function HomeClient() {
                   prev ? { ...prev, demo: demoUrl } : null,
                 )
                 if (window.innerWidth < 768) {
-                  setActivePanel('preview')
+                  setActivePanel("preview")
                 }
               }
             }
           })
           .catch((error) => {
-            console.error('Error fetching demo URL:', error)
+            console.error("Error fetching demo URL:", error)
           })
       }
 
@@ -313,13 +317,13 @@ export function HomeClient() {
     if (!message.trim() || isLoading || !currentChatId) return
 
     const userMessage = message.trim()
-    setMessage('')
+    setMessage("")
     setIsLoading(true)
 
-    setChatHistory((prev) => [...prev, { type: 'user', content: userMessage }])
+    setChatHistory((prev) => [...prev, { type: "user", content: userMessage }])
 
     try {
-      const response = await client.api.chats[':id'].message.$post({
+      const response = await client.api.chats[":id"].message.$post({
         param: { id: currentChatId },
         json: {
           message: userMessage,
@@ -329,27 +333,27 @@ export function HomeClient() {
 
       if (!response.ok) {
         let errorMessage =
-          'Sorry, there was an error processing your message. Please try again.'
+          "Sorry, there was an error processing your message. Please try again."
         try {
-          const errorData = await response.json() as Record<string, unknown>
-          if ('message' in errorData && typeof errorData.message === 'string') {
+          const errorData = (await response.json()) as Record<string, unknown>
+          if ("message" in errorData && typeof errorData.message === "string") {
             errorMessage = errorData.message
           } else if (response.status === 429) {
             errorMessage =
-              'You have exceeded your maximum number of messages for the day. Please try again later.'
+              "You have exceeded your maximum number of messages for the day. Please try again later."
           }
         } catch (parseError) {
-          console.error('Error parsing error response:', parseError)
+          console.error("Error parsing error response:", parseError)
           if (response.status === 429) {
             errorMessage =
-              'You have exceeded your maximum number of messages for the day. Please try again later.'
+              "You have exceeded your maximum number of messages for the day. Please try again later."
           }
         }
         throw new Error(errorMessage)
       }
 
       if (!response.body) {
-        throw new Error('No response body for streaming')
+        throw new Error("No response body for streaming")
       }
 
       setIsLoading(false)
@@ -358,24 +362,24 @@ export function HomeClient() {
       setChatHistory((prev) => [
         ...prev,
         {
-          type: 'assistant',
+          type: "assistant",
           content: [],
           isStreaming: true,
           stream: response.body,
         },
       ])
     } catch (error) {
-      console.error('Error:', error)
+      console.error("Error:", error)
 
       const errorMessage =
         error instanceof Error
           ? error.message
-          : 'Sorry, there was an error processing your message. Please try again.'
+          : "Sorry, there was an error processing your message. Please try again."
 
       setChatHistory((prev) => [
         ...prev,
         {
-          type: 'assistant',
+          type: "assistant",
           content: errorMessage,
         },
       ])
@@ -386,19 +390,19 @@ export function HomeClient() {
 
   if (showChatInterface) {
     return (
-      <div className="h-full bg-gray-50 dark:bg-black flex flex-col overflow-hidden">
+      <div className="flex h-full flex-col overflow-hidden bg-gray-50 dark:bg-black">
         <Suspense fallback={null}>
           <SearchParamsHandler onReset={handleReset} />
         </Suspense>
 
         <ResizableLayout
-          className="flex-1 min-h-0"
+          className="min-h-0 flex-1"
           singlePanelMode={false}
-          activePanel={activePanel === 'chat' ? 'left' : 'right'}
+          activePanel={activePanel === "chat" ? "left" : "right"}
           leftPanel={
-            <div className="flex flex-col h-full">
+            <div className="flex h-full flex-col">
               <ChatHeader />
-              <div className="flex-1 min-h-0 overflow-y-auto">
+              <div className="min-h-0 flex-1 overflow-y-auto">
                 <ChatMessages
                   chatHistory={chatHistory}
                   isLoading={isLoading}
@@ -430,7 +434,7 @@ export function HomeClient() {
           }
         />
 
-        <div className="md:hidden flex-shrink-0">
+        <div className="flex-shrink-0 md:hidden">
           <BottomToolbar
             activePanel={activePanel}
             onPanelChange={setActivePanel}
@@ -442,23 +446,23 @@ export function HomeClient() {
   }
 
   return (
-    <div className="h-full bg-gray-50 dark:bg-black flex flex-col">
+    <div className="flex h-full flex-col bg-gray-50 dark:bg-black">
       <Suspense fallback={null}>
         <SearchParamsHandler onReset={handleReset} />
       </Suspense>
 
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl w-full">
-          <div className="text-center mb-8 md:mb-12">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+      <div className="flex flex-1 items-center justify-center px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-4xl">
+          <div className="mb-8 text-center md:mb-12">
+            <h2 className="mb-4 font-bold text-2xl text-gray-900 sm:text-3xl md:text-4xl dark:text-white">
               What can we build together?
             </h2>
           </div>
 
-          <div className="max-w-2xl mx-auto">
+          <div className="mx-auto max-w-2xl">
             <PromptInput
               onSubmit={handleSendMessage}
-              className="w-full relative"
+              className="relative w-full"
               onImageDrop={handleImageFiles}
               isDragOver={isDragOver}
               onDragOver={handleDragOver}
@@ -488,28 +492,28 @@ export function HomeClient() {
                   <PromptInputMicButton
                     onTranscript={(transcript) => {
                       setMessage(
-                        (prev) => prev + (prev ? ' ' : '') + transcript,
+                        (prev) => prev + (prev ? " " : "") + transcript,
                       )
                     }}
                     onError={(error) => {
-                      console.error('Speech recognition error:', error)
+                      console.error("Speech recognition error:", error)
                     }}
                     disabled={isLoading}
                   />
                   <PromptInputSubmit
                     disabled={!message.trim() || isLoading}
-                    status={isLoading ? 'streaming' : 'ready'}
+                    status={isLoading ? "streaming" : "ready"}
                   />
                 </PromptInputTools>
               </PromptInputToolbar>
             </PromptInput>
           </div>
 
-          <div className="mt-4 max-w-2xl mx-auto">
+          <div className="mx-auto mt-4 max-w-2xl">
             <Suggestions>
               <Suggestion
                 onClick={() => {
-                  setMessage('Landing page')
+                  setMessage("Landing page")
                   setTimeout(() => {
                     const form = textareaRef.current?.form
                     if (form) {
@@ -521,7 +525,7 @@ export function HomeClient() {
               />
               <Suggestion
                 onClick={() => {
-                  setMessage('Todo app')
+                  setMessage("Todo app")
                   setTimeout(() => {
                     const form = textareaRef.current?.form
                     if (form) {
@@ -533,7 +537,7 @@ export function HomeClient() {
               />
               <Suggestion
                 onClick={() => {
-                  setMessage('Dashboard')
+                  setMessage("Dashboard")
                   setTimeout(() => {
                     const form = textareaRef.current?.form
                     if (form) {
@@ -545,7 +549,7 @@ export function HomeClient() {
               />
               <Suggestion
                 onClick={() => {
-                  setMessage('Blog')
+                  setMessage("Blog")
                   setTimeout(() => {
                     const form = textareaRef.current?.form
                     if (form) {
@@ -557,7 +561,7 @@ export function HomeClient() {
               />
               <Suggestion
                 onClick={() => {
-                  setMessage('E-commerce')
+                  setMessage("E-commerce")
                   setTimeout(() => {
                     const form = textareaRef.current?.form
                     if (form) {
@@ -569,7 +573,7 @@ export function HomeClient() {
               />
               <Suggestion
                 onClick={() => {
-                  setMessage('Portfolio')
+                  setMessage("Portfolio")
                   setTimeout(() => {
                     const form = textareaRef.current?.form
                     if (form) {
@@ -581,7 +585,7 @@ export function HomeClient() {
               />
               <Suggestion
                 onClick={() => {
-                  setMessage('Chat app')
+                  setMessage("Chat app")
                   setTimeout(() => {
                     const form = textareaRef.current?.form
                     if (form) {
@@ -593,7 +597,7 @@ export function HomeClient() {
               />
               <Suggestion
                 onClick={() => {
-                  setMessage('Calculator')
+                  setMessage("Calculator")
                   setTimeout(() => {
                     const form = textareaRef.current?.form
                     if (form) {
@@ -606,9 +610,9 @@ export function HomeClient() {
             </Suggestions>
           </div>
 
-          <div className="mt-8 md:mt-16 text-center text-sm text-muted-foreground">
+          <div className="mt-8 text-center text-muted-foreground text-sm md:mt-16">
             <p>
-              Powered by{' '}
+              Powered by{" "}
               <Link
                 href="https://v0-sdk.dev"
                 className="text-foreground hover:underline"

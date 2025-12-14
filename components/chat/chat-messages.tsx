@@ -1,18 +1,19 @@
-import React, { useRef, useEffect } from 'react'
-import type { MessageBinaryFormat } from '@v0-sdk/react'
-import { Message } from '@/components/ai-elements/message'
+import type { MessageBinaryFormat } from "@v0-sdk/react"
+import { StreamingMessage } from "@v0-sdk/react"
+import type React from "react"
+import { useEffect, useRef } from "react"
 import {
   Conversation,
   ConversationContent,
-} from '@/components/ai-elements/conversation'
-import { Loader } from '@/components/ai-elements/loader'
-import { MessageRenderer } from '@/components/message-renderer'
-import { sharedComponents } from '@/components/shared-components'
-import { StreamingMessage } from '@v0-sdk/react'
-import { cn } from '@/lib/utils'
+} from "@/components/ai-elements/conversation"
+import { Loader } from "@/components/ai-elements/loader"
+import { Message } from "@/components/ai-elements/message"
+import { MessageRenderer } from "@/components/message-renderer"
+import { sharedComponents } from "@/components/shared-components"
+import { cn } from "@/lib/utils"
 
 type ChatMessage = {
-  type: 'user' | 'assistant'
+  type: "user" | "assistant"
   content: string | MessageBinaryFormat
   isStreaming?: boolean
   stream?: ReadableStream<Uint8Array> | null
@@ -48,23 +49,27 @@ export function ChatMessages(props: Props) {
 
   useEffect(() => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
     }
-  }, [props.chatHistory, props.isLoading])
+  }, [])
 
   if (props.chatHistory.length === 0) {
     return (
       <Conversation>
         <ConversationContent>
-          <div>
-          </div>
+          <div></div>
         </ConversationContent>
       </Conversation>
     )
   }
 
   return (
-    <div className={cn('relative p-2', isLocked && 'pointer-events-none select-none')}>
+    <div
+      className={cn(
+        "relative p-2",
+        isLocked && "pointer-events-none select-none",
+      )}
+    >
       <Conversation>
         <ConversationContent>
           {props.chatHistory.map((msg, index) => (
@@ -77,15 +82,20 @@ export function ChatMessages(props: Props) {
                   onComplete={props.onStreamingComplete}
                   onChatData={props.onChatData}
                   onChunk={() => {
-                    if (props.onStreamingStarted && !streamingStartedRef.current) {
+                    if (
+                      props.onStreamingStarted &&
+                      !streamingStartedRef.current
+                    ) {
                       streamingStartedRef.current = true
                       props.onStreamingStarted()
                     }
                     if (messagesEndRef.current) {
-                      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
+                      messagesEndRef.current.scrollIntoView({
+                        behavior: "smooth",
+                      })
                     }
                   }}
-                  onError={(error) => console.error('Streaming error:', error)}
+                  onError={(error) => console.error("Streaming error:", error)}
                   components={sharedComponents}
                   showLoadingIndicator={false}
                 />
