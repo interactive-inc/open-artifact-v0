@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { StreamingProvider } from '@/contexts/streaming-context'
-import { SWRProvider } from '@/components/providers/swr-provider'
+import { QueryProvider } from '@/components/providers/query-provider'
 import { SessionProvider } from '@/components/providers/session-provider'
 
 const geistSans = Geist({
@@ -56,9 +56,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <SessionProvider>
-          <SWRProvider>
+          <QueryProvider>
             <StreamingProvider>{children}</StreamingProvider>
-          </SWRProvider>
+          </QueryProvider>
         </SessionProvider>
       </body>
     </html>

@@ -26,18 +26,16 @@ import { ChatInput } from '@/components/chat/chat-input'
 import { PreviewPanel } from '@/components/chat/preview-panel'
 import { ResizableLayout } from '@/components/shared/resizable-layout'
 import { BottomToolbar } from '@/components/shared/bottom-toolbar'
+import { client } from '@/lib/api/client'
 
-// Component that uses useSearchParams - needs to be wrapped in Suspense
 function SearchParamsHandler({ onReset }: { onReset: () => void }) {
   const searchParams = useSearchParams()
 
-  // Reset UI when reset parameter is present
   useEffect(() => {
     const reset = searchParams.get('reset')
     if (reset === 'true') {
       onReset()
 
-      // Remove the reset parameter from URL without triggering navigation
       const newUrl = new URL(window.location.href)
       newUrl.searchParams.delete('reset')
       window.history.replaceState({}, '', newUrl.pathname)
@@ -73,7 +71,6 @@ export function HomeClient() {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const handleReset = () => {
-    // Reset all chat-related state
     setShowChatInterface(false)
     setChatHistory([])
     setCurrentChatId(null)
@@ -84,10 +81,8 @@ export function HomeClient() {
     setIsFullscreen(false)
     setRefreshKey((prev) => prev + 1)
 
-    // Clear any stored data
     clearPromptFromStorage()
 
-    // Focus textarea after reset
     setTimeout(() => {
       if (textareaRef.current) {
         textareaRef.current.focus()
@@ -95,13 +90,11 @@ export function HomeClient() {
     }, 0)
   }
 
-  // Auto-focus the textarea on page load and restore from sessionStorage
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.focus()
     }
 
-    // Restore prompt data from sessionStorage
     const storedData = loadPromptFromStorage()
     if (storedData) {
       setMessage(storedData.message)
@@ -114,17 +107,14 @@ export function HomeClient() {
     }
   }, [])
 
-  // Save prompt data to sessionStorage whenever message or attachments change
   useEffect(() => {
     if (message.trim() || attachments.length > 0) {
       savePromptToStorage(message, attachments)
     } else {
-      // Clear sessionStorage if both message and attachments are empty
       clearPromptFromStorage()
     }
   }, [message, attachments])
 
-  // Image attachment handlers
   const handleImageFiles = async (files: File[]) => {
     try {
       const newAttachments = await Promise.all(
@@ -159,13 +149,11 @@ export function HomeClient() {
     const userMessage = message.trim()
     const currentAttachments = [...attachments]
 
-    // Clear sessionStorage immediately upon submission
     clearPromptFromStorage()
 
     setMessage('')
     setAttachments([])
 
-    // Immediately show chat interface and add user message
     setShowChatInterface(true)
     setChatHistory([
       {
@@ -176,25 +164,20 @@ export function HomeClient() {
     setIsLoading(true)
 
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const response = await client.api.chats.$post({
+        json: {
           message: userMessage,
           streaming: true,
           attachments: currentAttachments.map((att) => ({ url: att.dataUrl })),
-        }),
+        },
       })
 
       if (!response.ok) {
-        // Try to get the specific error message from the response
         let errorMessage =
           'Sorry, there was an error processing your message. Please try again.'
         try {
-          const errorData = await response.json()
-          if (errorData.message) {
+          const errorData = await response.json() as Record<string, unknown>
+          if ('message' in errorData && typeof errorData.message === 'string') {
             errorMessage = errorData.message
           } else if (response.status === 429) {
             errorMessage =
@@ -216,7 +199,6 @@ export function HomeClient() {
 
       setIsLoading(false)
 
-      // Add streaming assistant response
       setChatHistory((prev) => [
         ...prev,
         {
@@ -230,7 +212,6 @@ export function HomeClient() {
       console.error('Error creating chat:', error)
       setIsLoading(false)
 
-      // Use the specific error message if available, otherwise fall back to generic message
       const errorMessage =
         error instanceof Error
           ? error.message
@@ -248,30 +229,20 @@ export function HomeClient() {
 
   const handleChatData = async (chatData: any) => {
     if (chatData.id) {
-      // Only set currentChat if it's not already set or if this is the main chat object
       if (!currentChatId || chatData.object === 'chat') {
         setCurrentChatId(chatData.id)
         setCurrentChat({ id: chatData.id })
 
-        // Update URL without triggering Next.js routing
         window.history.pushState(null, '', `/chats/${chatData.id}`)
       }
 
-      // Create ownership record for new chat (only if this is a new chat)
       if (!currentChatId) {
         try {
-          await fetch('/api/chat/ownership', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              chatId: chatData.id,
-            }),
+          await client.api.chats.ownership.$post({
+            json: { chatId: chatData.id },
           })
         } catch (error) {
           console.error('Failed to create chat ownership:', error)
-          // Don't fail the UI if ownership creation fails
         }
       }
     }
@@ -280,7 +251,6 @@ export function HomeClient() {
   const handleStreamingComplete = async (finalContent: any) => {
     setIsLoading(false)
 
-    // Update chat history with final content
     setChatHistory((prev) => {
       const updated = [...prev]
       const lastIndex = updated.length - 1
@@ -295,26 +265,23 @@ export function HomeClient() {
       return updated
     })
 
-    // Fetch demo URL after streaming completes
-    // Use the current state by accessing it in the state updater
     setCurrentChat((prevCurrentChat) => {
       if (prevCurrentChat?.id) {
-        // Fetch demo URL asynchronously
-        fetch(`/api/chats/${prevCurrentChat.id}`)
+        client.api.chats[':id'].$get({
+          param: { id: prevCurrentChat.id },
+        })
           .then((response) => {
             if (response.ok) {
               return response.json()
-            } else {
-              console.warn('Failed to fetch chat details:', response.status)
-              return null
             }
+            console.warn('Failed to fetch chat details:', response.status)
+            return null
           })
           .then((chatDetails) => {
-            if (chatDetails) {
+            if (chatDetails && !('error' in chatDetails)) {
               const demoUrl =
-                chatDetails?.latestVersion?.demoUrl || chatDetails?.demo
+                (chatDetails as any)?.latestVersion?.demoUrl || (chatDetails as any)?.demo
 
-              // Update the current chat with demo URL
               if (demoUrl) {
                 setCurrentChat((prev) =>
                   prev ? { ...prev, demo: demoUrl } : null,
@@ -330,7 +297,6 @@ export function HomeClient() {
           })
       }
 
-      // Return the current state unchanged for now
       return prevCurrentChat
     })
   }
@@ -343,29 +309,23 @@ export function HomeClient() {
     setMessage('')
     setIsLoading(true)
 
-    // Add user message to chat history
     setChatHistory((prev) => [...prev, { type: 'user', content: userMessage }])
 
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const response = await client.api.chats[':id'].message.$post({
+        param: { id: currentChatId },
+        json: {
           message: userMessage,
-          chatId: currentChatId,
           streaming: true,
-        }),
+        },
       })
 
       if (!response.ok) {
-        // Try to get the specific error message from the response
         let errorMessage =
           'Sorry, there was an error processing your message. Please try again.'
         try {
-          const errorData = await response.json()
-          if (errorData.message) {
+          const errorData = await response.json() as Record<string, unknown>
+          if ('message' in errorData && typeof errorData.message === 'string') {
             errorMessage = errorData.message
           } else if (response.status === 429) {
             errorMessage =
@@ -387,7 +347,6 @@ export function HomeClient() {
 
       setIsLoading(false)
 
-      // Add streaming response
       setChatHistory((prev) => [
         ...prev,
         {
@@ -400,7 +359,6 @@ export function HomeClient() {
     } catch (error) {
       console.error('Error:', error)
 
-      // Use the specific error message if available, otherwise fall back to generic message
       const errorMessage =
         error instanceof Error
           ? error.message
@@ -420,7 +378,6 @@ export function HomeClient() {
   if (showChatInterface) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-black flex flex-col">
-        {/* Handle search params with Suspense boundary */}
         <Suspense fallback={null}>
           <SearchParamsHandler onReset={handleReset} />
         </Suspense>
@@ -479,14 +436,12 @@ export function HomeClient() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black flex flex-col">
-      {/* Handle search params with Suspense boundary */}
       <Suspense fallback={null}>
         <SearchParamsHandler onReset={handleReset} />
       </Suspense>
 
       <AppHeader />
 
-      {/* Main Content */}
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl w-full">
           <div className="text-center mb-8 md:mb-12">
@@ -495,7 +450,6 @@ export function HomeClient() {
             </h2>
           </div>
 
-          {/* Prompt Input */}
           <div className="max-w-2xl mx-auto">
             <PromptInput
               onSubmit={handleSendMessage}
@@ -546,13 +500,11 @@ export function HomeClient() {
             </PromptInput>
           </div>
 
-          {/* Suggestions */}
           <div className="mt-4 max-w-2xl mx-auto">
             <Suggestions>
               <Suggestion
                 onClick={() => {
                   setMessage('Landing page')
-                  // Submit after setting message
                   setTimeout(() => {
                     const form = textareaRef.current?.form
                     if (form) {
@@ -565,7 +517,6 @@ export function HomeClient() {
               <Suggestion
                 onClick={() => {
                   setMessage('Todo app')
-                  // Submit after setting message
                   setTimeout(() => {
                     const form = textareaRef.current?.form
                     if (form) {
@@ -578,7 +529,6 @@ export function HomeClient() {
               <Suggestion
                 onClick={() => {
                   setMessage('Dashboard')
-                  // Submit after setting message
                   setTimeout(() => {
                     const form = textareaRef.current?.form
                     if (form) {
@@ -591,7 +541,6 @@ export function HomeClient() {
               <Suggestion
                 onClick={() => {
                   setMessage('Blog')
-                  // Submit after setting message
                   setTimeout(() => {
                     const form = textareaRef.current?.form
                     if (form) {
@@ -604,7 +553,6 @@ export function HomeClient() {
               <Suggestion
                 onClick={() => {
                   setMessage('E-commerce')
-                  // Submit after setting message
                   setTimeout(() => {
                     const form = textareaRef.current?.form
                     if (form) {
@@ -617,7 +565,6 @@ export function HomeClient() {
               <Suggestion
                 onClick={() => {
                   setMessage('Portfolio')
-                  // Submit after setting message
                   setTimeout(() => {
                     const form = textareaRef.current?.form
                     if (form) {
@@ -630,7 +577,6 @@ export function HomeClient() {
               <Suggestion
                 onClick={() => {
                   setMessage('Chat app')
-                  // Submit after setting message
                   setTimeout(() => {
                     const form = textareaRef.current?.form
                     if (form) {
@@ -643,7 +589,6 @@ export function HomeClient() {
               <Suggestion
                 onClick={() => {
                   setMessage('Calculator')
-                  // Submit after setting message
                   setTimeout(() => {
                     const form = textareaRef.current?.form
                     if (form) {
@@ -656,7 +601,6 @@ export function HomeClient() {
             </Suggestions>
           </div>
 
-          {/* Footer */}
           <div className="mt-8 md:mt-16 text-center text-sm text-muted-foreground">
             <p>
               Powered by{' '}

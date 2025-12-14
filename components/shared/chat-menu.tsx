@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { MoreHorizontal, Copy, Trash2, ExternalLink } from 'lucide-react'
+import { useDeleteChat, useForkChat } from '@/hooks/api/use-chats'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,72 +17,32 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 
-interface ChatMenuProps {
+type Props = {
   chatId: string
 }
 
-export function ChatMenu({ chatId }: ChatMenuProps) {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
+export function ChatMenu({ chatId }: Props) {
   const [isDuplicateDialogOpen, setIsDuplicateDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
-  const handleDuplicateChat = async () => {
-    try {
-      setIsLoading(true)
-      const response = await fetch('/api/chat/fork', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ chatId }),
-      })
+  const deleteMutation = useDeleteChat()
+  const forkMutation = useForkChat()
 
-      if (!response.ok) {
-        throw new Error('Failed to duplicate chat')
-      }
+  const isLoading = deleteMutation.isPending || forkMutation.isPending
 
-      const result = await response.json()
-
-      // Close dialog and navigate to the new forked chat
-      setIsDuplicateDialogOpen(false)
-      router.push(`/chats/${result.id}`)
-    } catch (error) {
-      console.error('Error duplicating chat:', error)
-      // You could add a toast notification here
-    } finally {
-      setIsLoading(false)
-    }
+  const handleDuplicateChat = () => {
+    forkMutation.mutate(chatId, {
+      onSuccess: () => setIsDuplicateDialogOpen(false),
+    })
   }
 
-  const handleDeleteChat = async () => {
-    try {
-      setIsLoading(true)
-      const response = await fetch('/api/chat/delete', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ chatId }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to delete chat')
-      }
-
-      // Close dialog and navigate back to homepage
-      setIsDeleteDialogOpen(false)
-      router.push('/')
-    } catch (error) {
-      console.error('Error deleting chat:', error)
-      // You could add a toast notification here
-    } finally {
-      setIsLoading(false)
-    }
+  const handleDeleteChat = () => {
+    deleteMutation.mutate(chatId, {
+      onSuccess: () => setIsDeleteDialogOpen(false),
+    })
   }
 
   return (

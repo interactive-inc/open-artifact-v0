@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { LogOut, User } from 'lucide-react'
-import { signOutAction } from '@/app/(auth)/actions'
+import { useSignOut } from '@/hooks/api/use-auth'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 import type { UserType } from '@/lib/supabase/types'
 
@@ -24,6 +24,8 @@ type Props = {
 }
 
 export function UserNav(props: Props) {
+  const signOutMutation = useSignOut()
+
   const initials =
     props.session?.user?.email?.split('@')[0]?.slice(0, 2)?.toUpperCase() || 'U'
 
@@ -72,13 +74,12 @@ export function UserNav(props: Props) {
         )}
         {!isSignedOut && (
           <DropdownMenuItem
-            onClick={async () => {
-              await signOutAction()
-            }}
+            onClick={() => signOutMutation.mutate()}
+            disabled={signOutMutation.isPending}
             className="cursor-pointer"
           >
             <LogOut className="mr-2 h-4 w-4" />
-            <span>Sign out</span>
+            <span>{signOutMutation.isPending ? 'Signing out...' : 'Sign out'}</span>
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>

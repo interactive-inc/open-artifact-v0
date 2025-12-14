@@ -1,23 +1,33 @@
 'use client'
 
-import { useActionState } from 'react'
-import { signInAction, signUpAction } from '@/app/(auth)/actions'
+import { useState, type FormEvent } from 'react'
+import { useSignIn, useSignUp } from '@/hooks/api/use-auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Link from 'next/link'
 
-interface AuthFormProps {
+type Props = {
   type: 'signin' | 'signup'
 }
 
-export function AuthForm({ type }: AuthFormProps) {
-  const [state, formAction, isPending] = useActionState(
-    type === 'signin' ? signInAction : signUpAction,
-    undefined,
-  )
+export function AuthForm({ type }: Props) {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
+  const signInMutation = useSignIn()
+  const signUpMutation = useSignUp()
+
+  const mutation = type === 'signin' ? signInMutation : signUpMutation
+  const isPending = mutation.isPending
+  const error = mutation.error
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    mutation.mutate({ email, password })
+  }
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <Input
           id="email"
@@ -27,6 +37,8 @@ export function AuthForm({ type }: AuthFormProps) {
           required
           autoFocus
           className="w-full"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
       </div>
       <div>
@@ -38,11 +50,13 @@ export function AuthForm({ type }: AuthFormProps) {
           required
           className="w-full"
           minLength={type === 'signup' ? 6 : 1}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
         />
       </div>
 
-      {state?.type === 'error' && (
-        <div className="text-sm text-red-500">{state.message}</div>
+      {error && (
+        <div className="text-sm text-red-500">{error.message}</div>
       )}
 
       <Button type="submit" className="w-full" disabled={isPending}>
