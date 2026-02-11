@@ -1,6 +1,6 @@
 ---
-name: infer-code-rules
-description: "コードベースから設計パターン・規約を抽出してローカルルールに記録する。別のスキルから呼び出すか、コマンドで明示的に実行する。"
+name: claude-code-rules
+description: "Extract and record coding patterns, conventions, and design rules from codebase into local rule files. Called by other skills or explicitly via command."
 disable-model-invocation: true
 ---
 
