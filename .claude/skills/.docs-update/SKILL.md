@@ -1,5 +1,5 @@
 ---
-name: .update-docs
+name: .docs-update
 description: Update product specifications in .docs/ directory. Sync documentation with current codebase.
 ---
 
