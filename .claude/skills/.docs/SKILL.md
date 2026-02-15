@@ -173,7 +173,7 @@ flowchart, sequenceDiagram, erDiagram を使用。ASCII アート禁止。
 ---
 status: unresolved
 related: <related-file>.md
-created: YYYY-MM-DD
+created-at: YYYY-MM-DD
 ---
 
 # 不一致の内容
