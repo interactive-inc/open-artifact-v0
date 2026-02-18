@@ -1,5 +1,5 @@
 ---
-name: .docs
+name: docs
 description: Define structure, writing rules, and validation criteria for product specifications in .docs/ directory. Use for spec review and consistency checks.
 ---
 

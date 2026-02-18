@@ -1,5 +1,5 @@
 ---
-name: .docs-update
+name: docs-update
 description: Update product specifications in .docs/ directory. Sync documentation with current codebase.
 ---
 
@@ -7,7 +7,7 @@ description: Update product specifications in .docs/ directory. Sync documentati
 
 `.docs/` の仕様書をコードと同期して更新する。
 
-ディレクトリ構造・記述ルール・検証基準は `.docs` スキルに定義されている。
+ディレクトリ構造・記述ルール・検証基準は `docs` スキルに定義されている。
 
 ## 基本方針
 
